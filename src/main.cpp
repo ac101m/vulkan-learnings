@@ -26,7 +26,7 @@ public:
         auto const validationLayers = doDebug ? debugValidationLayers : std::vector<std::string>(0);
 
         this->window = std::shared_ptr<utils::glfw::Window>(new utils::glfw::Window(windowWidth, windowHeight));
-        this->vkInstance = std::shared_ptr<utils::vulkan::Instance>(new utils::vulkan::Instance(std::vector<std::string>(0)));
+        this->vkInstance = std::shared_ptr<utils::vulkan::Instance>(new utils::vulkan::Instance(validationLayers));
     }
 
     void run() {
