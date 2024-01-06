@@ -3,4 +3,4 @@ build
 
 # Kdevelop
 .kdev4
-vulkan-tutorial.kdev4
+*.kdev4
