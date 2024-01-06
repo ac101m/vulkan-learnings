@@ -27,13 +27,15 @@ namespace utils::vulkan {
             VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 
         uint32_t const logMessageTypes =
-             VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+            VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+            VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+            VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 
     public:
         Instance(std::vector<std::string> const& validationLayers);
         ~Instance();
+
+        std::vector<VkPhysicalDevice> enumeratePhysicalDevices() const;
 
         VkInstance& get() {
             return vkInstance;
