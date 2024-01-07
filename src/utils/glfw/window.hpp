@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils/misc/logging.hpp"
+
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
@@ -8,12 +10,19 @@
 
 namespace utils::glfw {
 
+    /**
+     * @brief RAII wrapper for GLFW window object.
+     */
     class Window {
     private:
+        utils::Logger logger = utils::Logger("Window");
+
         GLFWwindow* window = nullptr;
 
+        std::string const name;
+
     public:
-        Window(uint32_t const width, uint32_t const height);
+        Window(std::string const name, uint32_t const width, uint32_t const height);
         ~Window();
 
         /**

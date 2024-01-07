@@ -10,9 +10,11 @@ set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 set(UTILS_SOURCE_SET
+    src/utils/misc/logging.cpp
     src/utils/glfw/window.cpp
     src/utils/vulkan/instance.cpp
-    src/utils/vulkan/debug.cpp)
+    src/utils/vulkan/debug.cpp
+    src/utils/vulkan/device.cpp)
 
 set(MAIN_SOURCE_SET
     ${UTILS_SOURCE_SET}

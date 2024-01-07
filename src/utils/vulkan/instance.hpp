@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utils/vulkan/debug.hpp"
+#include "utils/vulkan/device.hpp"
 
 #include "vulkan/vulkan.h"
 
@@ -23,6 +24,7 @@ namespace utils::vulkan {
 
         uint32_t const logMessageSeverities =
             VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+            VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
             VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
             VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 
@@ -35,7 +37,7 @@ namespace utils::vulkan {
         Instance(std::vector<std::string> const& validationLayers);
         ~Instance();
 
-        std::vector<VkPhysicalDevice> enumeratePhysicalDevices() const;
+        std::vector<PhysicalDevice> getPhysicalDevices() const;
 
         VkInstance& get() {
             return vkInstance;

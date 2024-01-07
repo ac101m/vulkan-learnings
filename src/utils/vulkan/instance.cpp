@@ -1,6 +1,5 @@
 #include "utils/vulkan/instance.hpp"
 #include "utils/vulkan/utils.hpp"
-#include "utils/vulkan/debug.hpp"
 
 #include "GLFW/glfw3.h"
 
@@ -25,7 +24,7 @@ namespace utils::vulkan {
         VkApplicationInfo appInfo {};
 
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        appInfo.pApplicationName = "Vulkan Experiment";
+        appInfo.pApplicationName = "Vulkan learnings";
         appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
         appInfo.pEngineName = "No Engine";
         appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -79,6 +78,24 @@ namespace utils::vulkan {
         }
 
         vkDestroyInstance(this->vkInstance, nullptr);
+    }
+
+
+    std::vector<PhysicalDevice> Instance::getPhysicalDevices() const {
+        uint32_t deviceCount = 0;
+        vkEnumeratePhysicalDevices(this->vkInstance, &deviceCount, nullptr);
+
+        std::vector<VkPhysicalDevice> vkDevices(deviceCount);
+        vkEnumeratePhysicalDevices(this->vkInstance, &deviceCount, vkDevices.data());
+
+        std::vector<PhysicalDevice> devices;
+        devices.reserve(deviceCount);
+
+        for (auto const& vkDevice : vkDevices) {
+            devices.push_back(PhysicalDevice(vkDevice));
+        }
+
+        return devices;
     }
 
 

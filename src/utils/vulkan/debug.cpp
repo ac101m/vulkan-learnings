@@ -1,4 +1,5 @@
 #include "utils/vulkan/debug.hpp"
+#include "utils/misc/logging.hpp"
 
 #include <iostream>
 #include <memory>
@@ -35,13 +36,25 @@ namespace utils::vulkan {
     }
 
 
+    utils::Logger logger("Vulkan");
+
+
     VKAPI_ATTR VkBool32 VKAPI_CALL debugMessageCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
         VkDebugUtilsMessageTypeFlagsEXT messageType,
         VkDebugUtilsMessengerCallbackDataEXT const * pCallbackData,
         void * pUserData
     ) {
-        std::cerr << pCallbackData->pMessage << "\n";
+        if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+            ERROR(logger) << pCallbackData->pMessage << std::endl;
+        } else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+            WARN(logger) << pCallbackData->pMessage << std::endl;
+        } else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
+            INFO(logger) << pCallbackData->pMessage << std::endl;
+        } else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+            TRACE(logger) << pCallbackData->pMessage << std::endl;
+        }
+
         return VK_FALSE;
     }
 
