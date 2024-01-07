@@ -12,11 +12,15 @@ namespace utils::vulkan {
 
     class Device {
     private:
-        //VkDevice const vkDevice;
+        VkDevice vkDevice;
 
     public:
-        Device(PhysicalDevice const& physicalDevice);
+        Device(PhysicalDevice& physicalDevice, QueueFamily const& queueFamily);
         ~Device();
+
+        VkDevice& get() {
+            return vkDevice;
+        }
     };
 
 }

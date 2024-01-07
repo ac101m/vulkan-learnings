@@ -18,7 +18,7 @@ namespace utils::vulkan {
 
     class PhysicalDevice {
     private:
-        VkPhysicalDevice const vkPhysicalDevice;
+        VkPhysicalDevice vkPhysicalDevice;
 
     public:
         PhysicalDevice(VkPhysicalDevice const& vkPhysicalDevice);
@@ -41,9 +41,13 @@ namespace utils::vulkan {
 
         /**
          * @brief Get a device suitability score based on device characteristics.
-         * @return Device suitability score as uint32_t, higher is better.
+         * @return Device suitability score as uint32_t, higher is better. 0 means device is unsuitable.
          */
         uint32_t getScore(uint32_t const requiredQueueFlags) const;
+
+        VkPhysicalDevice& get() {
+            return vkPhysicalDevice;
+        }
     };
 
 }
