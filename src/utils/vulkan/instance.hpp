@@ -34,11 +34,23 @@ namespace utils::vulkan {
             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 
     public:
+        /**
+         * @brief Construct and initialize a new vulkan instance.
+         * @param validationLayers std::vector of strings specifying desired validation layers.
+         */
         Instance(std::vector<std::string> const& validationLayers);
         ~Instance();
 
+        /**
+         * @brief Retrieve list of physical devices.
+         * @return std::vector of PhysicalDevice objects.
+         */
         std::vector<PhysicalDevice> getPhysicalDevices() const;
 
+        /**
+         * @brief Get the underlying vulkan C object.
+         * @return Reference to underlying VkObject
+         */
         VkInstance& get() {
             return vkInstance;
         }
