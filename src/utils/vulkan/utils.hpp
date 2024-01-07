@@ -36,7 +36,7 @@ namespace utils::vulkan {
         StringParameters(std::vector<std::string> const& parameters) {
             pointers.reserve(parameters.size());
             for (auto const& parameter : parameters) {
-                pointers.push_back(utils::misc::createRawString(parameter));
+                pointers.push_back(utils::createRawString(parameter));
             }
         }
 

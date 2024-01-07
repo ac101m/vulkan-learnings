@@ -4,7 +4,7 @@
 #include <string.h>
 
 
-namespace utils::misc {
+namespace utils {
 
     /**
      * @brief Creates a new raw string from an existing instance of std::string.
