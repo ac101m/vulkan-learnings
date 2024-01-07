@@ -14,6 +14,7 @@ set(UTILS_SOURCE_SET
     src/utils/glfw/window.cpp
     src/utils/vulkan/instance.cpp
     src/utils/vulkan/debug.cpp
+    src/utils/vulkan/physical_device.cpp
     src/utils/vulkan/device.cpp)
 
 set(MAIN_SOURCE_SET

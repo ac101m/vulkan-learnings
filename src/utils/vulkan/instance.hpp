@@ -1,7 +1,7 @@
 #pragma once
 
 #include "utils/vulkan/debug.hpp"
-#include "utils/vulkan/device.hpp"
+#include "utils/vulkan/physical_device.hpp"
 
 #include "vulkan/vulkan.h"
 
