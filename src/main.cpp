@@ -26,15 +26,17 @@ private:
     };
 
 
-    utils::vulkan::PhysicalDevice selectPhysicalDevice() const {
+    utils::vulkan::PhysicalDevice selectPhysicalDevice(uint32_t const requiredQueueFlags) const {
         auto const devices = this->vkInstance->getPhysicalDevices();
 
         uint32_t highScore = 0;
         utils::vulkan::PhysicalDevice const * selectedDevice;
 
         for (auto const& device : devices) {
-            if (device.getScore() > highScore) {
-                highScore = device.getScore();
+            uint32_t const score = device.getScore(requiredQueueFlags);
+
+            if (score > highScore) {
+                highScore = score;
                 selectedDevice = &device;
             }
         }
@@ -53,9 +55,11 @@ public:
 
         this->vkInstance = std::shared_ptr<utils::vulkan::Instance>(new utils::vulkan::Instance(validationLayers));
 
-        auto const device = selectPhysicalDevice();
+        uint32_t const requiredQueueFlags = VK_QUEUE_GRAPHICS_BIT;
 
-        INFO(log) << "Selected GPU: '" << device.getProperties().deviceName << "'" << std::endl;
+        auto const physicalDevice = selectPhysicalDevice(requiredQueueFlags);
+
+        INFO(log) << "Selected GPU: '" << physicalDevice.getProperties().deviceName << "'" << std::endl;
 
         this->window = std::shared_ptr<utils::glfw::Window>(new utils::glfw::Window("Vulkan learnings", windowWidth, windowHeight));
     }

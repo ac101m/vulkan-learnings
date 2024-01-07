@@ -3,9 +3,11 @@
 
 namespace utils::vulkan {
 
-    PhysicalDevice::PhysicalDevice(VkPhysicalDevice const& vkPhysicalDevice) : vkPhysicalDevice(vkPhysicalDevice) {
-        score = computeScore();
-    }
+    QueueFamily::QueueFamily(uint32_t const index, VkQueueFamilyProperties const properties) :
+        index(index), properties(properties) {}
+
+
+    PhysicalDevice::PhysicalDevice(VkPhysicalDevice const& vkPhysicalDevice) : vkPhysicalDevice(vkPhysicalDevice) {}
 
 
     VkPhysicalDeviceProperties PhysicalDevice::getProperties() const {
@@ -33,28 +35,23 @@ namespace utils::vulkan {
     }
 
 
-    QueueFamilyIndices PhysicalDevice::findQueueFamilies() const {
-        QueueFamilyIndices indices;
-
+     std::optional<QueueFamily> PhysicalDevice::selectQueueFamily(uint32_t const requiredQueueFlags) const {
         auto const queueFamilyProperties = getQueueFamilyProperties();
 
         for (unsigned i = 0; i < queueFamilyProperties.size(); i++) {
             auto const& properties = queueFamilyProperties[i];
 
-            if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                indices.graphicsFamily = i;
-            }
-
-            if (indices.allPresent()) {
-                break;
+            // Check if queue family supports
+            if ((properties.queueFlags & requiredQueueFlags) == requiredQueueFlags) {
+                return QueueFamily(i, properties);
             }
         }
 
-        return indices;
+        return std::optional<QueueFamily>();
     }
 
 
-    uint32_t PhysicalDevice::computeScore() const {
+    uint32_t PhysicalDevice::getScore(uint32_t const requiredQueueFlags) const {
         uint32_t score = 0;
 
         auto const features = getFeatures();
@@ -64,16 +61,16 @@ namespace utils::vulkan {
             return 0;
         }
 
-        auto const queueFamilyIndices = findQueueFamilies();
+        auto const queueFamily = selectQueueFamily(requiredQueueFlags);
 
         // Missing queue families
-        if (!queueFamilyIndices.allPresent()) {
+        if (!queueFamily.has_value()) {
             return 0;
         }
 
         auto const properties = getProperties();
 
-        // Strongly prefer discreet GPUs
+        // Strongly prefer discrete GPUs
         if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
             score += 10000;
         }

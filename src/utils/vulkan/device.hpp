@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utils/vulkan/physical_device.hpp"
+
 #include "vulkan/vulkan.h"
 
 #include <vector>
@@ -13,7 +15,7 @@ namespace utils::vulkan {
         //VkDevice const vkDevice;
 
     public:
-        Device();
+        Device(PhysicalDevice const& physicalDevice);
         ~Device();
     };
 

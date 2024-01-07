@@ -1,14 +1,17 @@
 #include "utils/vulkan/device.hpp"
 
+#include "vulkan/vulkan.h"
+
 
 namespace utils::vulkan {
 
-    Device::Device() {
+    Device::Device(PhysicalDevice const& physicalDevice) {
 
     }
 
-    Device::~Device() {
 
+    Device::~Device() {
+        //vkDestroyDevice(this->vkDevice, nullptr);
     }
 
 }

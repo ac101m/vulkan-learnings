@@ -8,22 +8,17 @@
 
 namespace utils::vulkan {
 
-    class QueueFamilyIndices {
-    public:
-        std::optional<uint32_t> graphicsFamily;
+    struct QueueFamily {
+        uint32_t const index;
+        VkQueueFamilyProperties const properties;
 
-        bool allPresent() const {
-            return graphicsFamily.has_value();
-        }
+        QueueFamily(uint32_t const index, VkQueueFamilyProperties const properties);
     };
 
 
     class PhysicalDevice {
     private:
         VkPhysicalDevice const vkPhysicalDevice;
-        uint32_t score;
-
-        uint32_t computeScore() const;
 
     public:
         PhysicalDevice(VkPhysicalDevice const& vkPhysicalDevice);
@@ -38,25 +33,17 @@ namespace utils::vulkan {
         std::vector<VkQueueFamilyProperties> getQueueFamilyProperties() const;
 
         /**
-         * @brief Get a list of queue family indices which support required features.
-         * @return QueueFamilyIndices object containing indices of needed queues.
+         * @brief Select a queue family based on required queue properties.
+         * @return std::optional of QueueFamily object which contains the queue
+         * family index and it's properties.
          */
-        QueueFamilyIndices findQueueFamilies() const;
-
-        /**
-         * For comparison of devices based on suitability score.
-         */
-        bool operator<(PhysicalDevice const& other) const {
-            return score < other.getScore();
-        }
+        std::optional<QueueFamily> selectQueueFamily(uint32_t const requiredQueueFlags) const;
 
         /**
          * @brief Get a device suitability score based on device characteristics.
          * @return Device suitability score as uint32_t, higher is better.
          */
-        uint32_t getScore() const {
-            return score;
-        }
+        uint32_t getScore(uint32_t const requiredQueueFlags) const;
     };
 
 }
