@@ -59,14 +59,17 @@ public:
     Application(uint32_t const windowWidth, uint32_t const windowHeight, bool doDebug) {
         auto const validationLayers = doDebug ? debugValidationLayers : std::vector<std::string>(0);
 
-        this->vkInstance = std::shared_ptr<utils::vulkan::Instance>(new utils::vulkan::Instance(validationLayers));
+        this->vkInstance = std::shared_ptr<utils::vulkan::Instance>(
+            new utils::vulkan::Instance(validationLayers));
 
         auto physicalDevice = selectPhysicalDevice(requiredQueueFlags);
         auto queueFamily = physicalDevice.selectQueueFamily(requiredQueueFlags);
 
-        this->vkDevice = std::shared_ptr<utils::vulkan::Device>(new utils::vulkan::Device(this->vkInstance, physicalDevice, queueFamily.value()));
+        this->vkDevice = std::shared_ptr<utils::vulkan::Device>(
+            new utils::vulkan::Device(this->vkInstance, physicalDevice, queueFamily.value()));
 
-        this->window = std::shared_ptr<utils::glfw::Window>(new utils::glfw::Window("Vulkan learnings", windowWidth, windowHeight));
+        this->window = std::shared_ptr<utils::glfw::Window>(
+            new utils::glfw::Window("Vulkan learnings", windowWidth, windowHeight));
     }
 
 
