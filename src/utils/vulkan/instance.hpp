@@ -2,6 +2,7 @@
 
 #include "utils/vulkan/debug.hpp"
 #include "utils/vulkan/physical_device.hpp"
+#include "utils/misc/logging.hpp"
 
 #include "vulkan/vulkan.h"
 
@@ -32,6 +33,8 @@ namespace utils::vulkan {
             VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+
+        static utils::Logger log;
 
     public:
         /**

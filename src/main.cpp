@@ -1,6 +1,7 @@
 #include "utils/glfw/initializer.hpp"
 #include "utils/glfw/window.hpp"
 #include "utils/vulkan/instance.hpp"
+#include "utils/vulkan/device.hpp"
 #include "utils/misc/logging.hpp"
 
 #define GLM_FORCE_RADIANS
@@ -16,14 +17,17 @@
 
 class Application {
 private:
-    utils::Logger log = utils::Logger("Application");
+    static utils::Logger log;
 
     std::shared_ptr<utils::glfw::Window> window;
     std::shared_ptr<utils::vulkan::Instance> vkInstance;
+    std::shared_ptr<utils::vulkan::Device> vkDevice;
 
     std::vector<std::string> const debugValidationLayers = {
         "VK_LAYER_KHRONOS_validation"
     };
+
+    uint32_t const requiredQueueFlags = VK_QUEUE_GRAPHICS_BIT;
 
 
     utils::vulkan::PhysicalDevice selectPhysicalDevice(uint32_t const requiredQueueFlags) const {
@@ -45,6 +49,8 @@ private:
             throw std::runtime_error("No suitable vulkan devices.");
         }
 
+        INFO(log) << "Selected physical device: '" << selectedDevice->getProperties().deviceName << "'" << std::endl;
+
         return *selectedDevice;
     }
 
@@ -55,11 +61,10 @@ public:
 
         this->vkInstance = std::shared_ptr<utils::vulkan::Instance>(new utils::vulkan::Instance(validationLayers));
 
-        uint32_t const requiredQueueFlags = VK_QUEUE_GRAPHICS_BIT;
+        auto physicalDevice = selectPhysicalDevice(requiredQueueFlags);
+        auto queueFamily = physicalDevice.selectQueueFamily(requiredQueueFlags);
 
-        auto const physicalDevice = selectPhysicalDevice(requiredQueueFlags);
-
-        INFO(log) << "Selected GPU: '" << physicalDevice.getProperties().deviceName << "'" << std::endl;
+        this->vkDevice = std::shared_ptr<utils::vulkan::Device>(new utils::vulkan::Device(this->vkInstance, physicalDevice, queueFamily.value()));
 
         this->window = std::shared_ptr<utils::glfw::Window>(new utils::glfw::Window("Vulkan learnings", windowWidth, windowHeight));
     }
@@ -75,6 +80,9 @@ public:
         INFO(log) << "Main loop stopped." << std::endl;
     }
 };
+
+
+utils::Logger Application::log = utils::Logger("Application");
 
 
 int main(void) {

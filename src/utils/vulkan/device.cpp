@@ -5,7 +5,14 @@
 
 namespace utils::vulkan {
 
-    Device::Device(PhysicalDevice& physicalDevice, QueueFamily const& queueFamily) {
+    utils::Logger Device::log = Logger("Device");
+
+
+    Device::Device(std::shared_ptr<Instance> vkInstanceHandle, PhysicalDevice& physicalDevice, QueueFamily const& queueFamily) :
+        vkInstanceHandle(vkInstanceHandle)
+    {
+        INFO(log) << "Creating logical device." << std::endl;
+
         float queuePriority = 1.0f;
 
         VkDeviceQueueCreateInfo queueCreateInfo {};
@@ -30,6 +37,7 @@ namespace utils::vulkan {
 
 
     Device::~Device() {
+        INFO(log) << "Destroying logical device." << std::endl;
         vkDestroyDevice(this->vkDevice, nullptr);
     }
 

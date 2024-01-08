@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iostream>
 #include <utility>
+#include <vector>
 
 
 namespace utils {
@@ -90,6 +91,21 @@ namespace utils {
          */
         LogStream log(LogLevel const level);
     };
+
+
+    /**
+     * @brief Overload for printing std::vector instances.
+     * Not sure why this isn't default...
+     */
+    template<typename T>
+    std::ostream& operator<<(std::ostream& ss, std::vector<T> const& vector) {
+        ss << '[';
+        unsigned i = vector.size();
+        for (auto const& element : vector) {
+            ss << element << ((--i > 0) ? ", " : "]");
+        }
+        return ss;
+    }
 
 
 #ifndef NDEBUG

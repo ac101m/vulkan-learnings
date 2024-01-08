@@ -14,7 +14,13 @@
 
 namespace utils::vulkan {
 
+    utils::Logger Instance::log = utils::Logger("Instance");
+
+
     Instance::Instance(std::vector<std::string> const& validationLayers) : debugEnabled(validationLayers.size() > 0) {
+        INFO(log) << "Creating instance. debug=" << this->debugEnabled << ", "
+                  << "validation layers=" << validationLayers << std::endl;
+
         if (debugEnabled) {
             checkValidationLayerSupport(validationLayers);
         }
@@ -73,6 +79,8 @@ namespace utils::vulkan {
 
 
     Instance::~Instance() {
+        INFO(log) << "Destroying instance." << std::endl;
+
         if (debugEnabled) {
             DestroyDebugUtilsMessengerEXT(this->vkInstance, this->vkDebugMessenger, nullptr);
         }
