@@ -20,9 +20,6 @@ namespace utils::vulkan {
 
         bool const debugEnabled;
 
-        std::vector<std::string> getRequiredExtensions(std::vector<std::string> const& validationLayers) const;
-        void checkValidationLayerSupport(std::vector<std::string> const& checkValidationLayerSupport) const;
-
         uint32_t const logMessageSeverities =
             VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
             VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
@@ -35,6 +32,13 @@ namespace utils::vulkan {
             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 
         static utils::Logger log;
+
+    public:
+        std::vector<std::string> const validationLayers;
+
+    private:
+        std::vector<std::string> getRequiredExtensions(std::vector<std::string> const& validationLayers) const;
+        void checkValidationLayerSupport() const;
 
     public:
         /**

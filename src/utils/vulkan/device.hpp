@@ -18,10 +18,17 @@ namespace utils::vulkan {
         VkDevice vkDevice;
 
         std::shared_ptr<Instance> vkInstanceHandle;
+        QueueFamily const queueFamily;
 
         static utils::Logger log;
 
     public:
+        /**
+         * @brief Construct and initialize a new logical device instance.
+         * @param vkInstanceHandle std::shared_ptr to utils::vulkan::Instance.
+         * @param physicalDevice utils::vulkan::PhysicalDevice instance designating the desired GPU.
+         * @param queueFamily Queue family to use for logical device.
+         */
         Device(std::shared_ptr<Instance> vkInstanceHandle, PhysicalDevice& physicalDevice, QueueFamily const& queueFamily);
         ~Device();
 

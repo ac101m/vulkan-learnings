@@ -17,12 +17,14 @@ namespace utils::vulkan {
     utils::Logger Instance::log = utils::Logger("Instance");
 
 
-    Instance::Instance(std::vector<std::string> const& validationLayers) : debugEnabled(validationLayers.size() > 0) {
+    Instance::Instance(std::vector<std::string> const& validationLayers) :
+        debugEnabled(validationLayers.size() > 0), validationLayers(validationLayers)
+    {
         INFO(log) << "Creating instance. debug=" << this->debugEnabled << ", "
                   << "validation layers=" << validationLayers << std::endl;
 
         if (debugEnabled) {
-            checkValidationLayerSupport(validationLayers);
+            checkValidationLayerSupport();
         }
 
         auto const requiredExtensions = getRequiredExtensions(validationLayers);
@@ -127,14 +129,14 @@ namespace utils::vulkan {
     }
 
 
-    void Instance::checkValidationLayerSupport(std::vector<std::string> const& validationLayers) const {
+    void Instance::checkValidationLayerSupport() const {
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
         std::vector<VkLayerProperties> availableLayers(layerCount);
         vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-        for (std::string const& layerName : validationLayers) {
+        for (std::string const& layerName : this->validationLayers) {
             bool layerFound = false;
 
             for (const auto& layerProperties : availableLayers) {

@@ -1,4 +1,5 @@
 #include "utils/vulkan/device.hpp"
+#include "utils/vulkan/utils.hpp"
 
 #include "vulkan/vulkan.h"
 
@@ -9,7 +10,7 @@ namespace utils::vulkan {
 
 
     Device::Device(std::shared_ptr<Instance> vkInstanceHandle, PhysicalDevice& physicalDevice, QueueFamily const& queueFamily) :
-        vkInstanceHandle(vkInstanceHandle)
+        vkInstanceHandle(vkInstanceHandle), queueFamily(queueFamily)
     {
         INFO(log) << "Creating logical device." << std::endl;
 
@@ -23,12 +24,15 @@ namespace utils::vulkan {
 
         VkPhysicalDeviceFeatures deviceFeatures {};
 
+        auto const validationLayerParams = StringParameters(vkInstanceHandle->validationLayers);
+
         VkDeviceCreateInfo createInfo {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         createInfo.pQueueCreateInfos = &queueCreateInfo;
         createInfo.queueCreateInfoCount = 1;
         createInfo.pEnabledFeatures = &deviceFeatures;
-        createInfo.enabledExtensionCount = 0;
+        createInfo.enabledLayerCount = validationLayerParams.size();
+        createInfo.ppEnabledLayerNames = validationLayerParams.data();
 
         if (vkCreateDevice(physicalDevice.get(), &createInfo, nullptr, &this->vkDevice) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create logical device.");
