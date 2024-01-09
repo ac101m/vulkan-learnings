@@ -7,7 +7,9 @@ namespace utils::vulkan {
         index(index), properties(properties) {}
 
 
-    PhysicalDevice::PhysicalDevice(VkPhysicalDevice const& vkPhysicalDevice) : vkPhysicalDevice(vkPhysicalDevice) {}
+    PhysicalDevice::PhysicalDevice(
+        std::shared_ptr<InstanceHandle> const& vkInstanceHandle, VkPhysicalDevice const& vkPhysicalDevice
+    ) : vkInstanceHandle(vkInstanceHandle), vkPhysicalDevice(vkPhysicalDevice) {}
 
 
     VkPhysicalDeviceProperties PhysicalDevice::getProperties() const {
@@ -27,10 +29,8 @@ namespace utils::vulkan {
     std::vector<VkQueueFamilyProperties> PhysicalDevice::getQueueFamilyProperties() const {
         uint32_t queueFamilyCount = 0;
         vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyCount, nullptr);
-
         std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
         vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyCount, queueFamilies.data());
-
         return queueFamilies;
     }
 
@@ -76,6 +76,17 @@ namespace utils::vulkan {
         }
 
         return score;
+    }
+
+
+    std::shared_ptr<Device> PhysicalDevice::createLogicalDevice(uint32_t const requiredQueueFlags, uint32_t const queueCount) const {
+        auto const queueFamily = selectQueueFamily(requiredQueueFlags);
+
+        if (!queueFamily.has_value()) {
+            throw std::runtime_error("Cannot create logical device, no queue family matches requirements.");
+        }
+
+        return std::make_shared<Device>(this->vkInstanceHandle, this->vkPhysicalDevice, queueFamily.value().index, queueCount);
     }
 
 }

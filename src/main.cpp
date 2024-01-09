@@ -19,64 +19,37 @@ class Application {
 private:
     static utils::Logger log;
 
-    std::shared_ptr<utils::glfw::Window> window;
+    std::shared_ptr<utils::glfw::Window> glfwWindow;
     std::shared_ptr<utils::vulkan::Instance> vkInstance;
+    std::shared_ptr<utils::vulkan::PhysicalDevice> vkPhysicalDevice;
     std::shared_ptr<utils::vulkan::Device> vkDevice;
 
     std::vector<std::string> const debugValidationLayers = {
         "VK_LAYER_KHRONOS_validation"
     };
 
-    uint32_t const requiredQueueFlags = VK_QUEUE_GRAPHICS_BIT;
-
-
-    utils::vulkan::PhysicalDevice selectPhysicalDevice(uint32_t const requiredQueueFlags) const {
-        auto const devices = this->vkInstance->getPhysicalDevices();
-
-        uint32_t highScore = 0;
-        utils::vulkan::PhysicalDevice const * selectedDevice;
-
-        for (auto const& device : devices) {
-            uint32_t const score = device.getScore(requiredQueueFlags);
-
-            if (score > highScore) {
-                highScore = score;
-                selectedDevice = &device;
-            }
-        }
-
-        if (highScore == 0) {
-            throw std::runtime_error("No suitable vulkan devices.");
-        }
-
-        INFO(log) << "Selected physical device: '" << selectedDevice->getProperties().deviceName << "'" << std::endl;
-
-        return *selectedDevice;
-    }
+    uint32_t const deviceQueueFlags = VK_QUEUE_GRAPHICS_BIT;
 
 
 public:
     Application(uint32_t const windowWidth, uint32_t const windowHeight, bool doDebug) {
         auto const validationLayers = doDebug ? debugValidationLayers : std::vector<std::string>(0);
 
-        this->vkInstance = std::shared_ptr<utils::vulkan::Instance>(
-            new utils::vulkan::Instance(validationLayers));
+        this->vkInstance = std::make_shared<utils::vulkan::Instance>(validationLayers);
+        this->vkPhysicalDevice = this->vkInstance->selectPhysicalDevice(deviceQueueFlags);
 
-        auto physicalDevice = selectPhysicalDevice(requiredQueueFlags);
-        auto queueFamily = physicalDevice.selectQueueFamily(requiredQueueFlags);
+        INFO(log) << "Selected physical device '" << this->vkPhysicalDevice->getProperties().deviceName << '\'' << std::endl;
 
-        this->vkDevice = std::shared_ptr<utils::vulkan::Device>(
-            new utils::vulkan::Device(this->vkInstance, physicalDevice, queueFamily.value()));
+        auto logicalDevice = this->vkPhysicalDevice->createLogicalDevice(deviceQueueFlags, 1);
 
-        this->window = std::shared_ptr<utils::glfw::Window>(
-            new utils::glfw::Window("Vulkan learnings", windowWidth, windowHeight));
+        this->glfwWindow = std::make_shared<utils::glfw::Window>("Vulkan learnings", windowWidth, windowHeight);
     }
 
 
     void run() {
         INFO(log) << "Main loop starting." << std::endl;
 
-        while (!window->shouldClose()) {
+        while (!glfwWindow->shouldClose()) {
             glfwPollEvents();
         }
 

@@ -1,5 +1,4 @@
 #include "utils/vulkan/debug.hpp"
-#include "utils/misc/logging.hpp"
 
 #include <iostream>
 #include <memory>
@@ -7,7 +6,30 @@
 
 namespace utils::vulkan {
 
-    VkResult CreateDebugUtilsMessengerEXT(
+    utils::Logger log = utils::Logger("Vulkan");
+
+
+    VKAPI_ATTR VkBool32 VKAPI_CALL debugMessageCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageType,
+        VkDebugUtilsMessengerCallbackDataEXT const * pCallbackData,
+        void * pUserData
+    ) {
+        if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+            ERROR(log) << pCallbackData->pMessage << std::endl;
+        } else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+            WARN(log) << pCallbackData->pMessage << std::endl;
+        } else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
+            INFO(log) << pCallbackData->pMessage << std::endl;
+        } else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+            TRACE(log) << pCallbackData->pMessage << std::endl;
+        }
+
+        return VK_FALSE;
+    }
+
+
+    VkResult DebugMessenger::CreateDebugUtilsMessengerEXT(
         VkInstance const& instance,
         VkDebugUtilsMessengerCreateInfoEXT const * pCreateInfo,
         VkAllocationCallbacks const * pAllocator,
@@ -23,7 +45,7 @@ namespace utils::vulkan {
     }
 
 
-    void DestroyDebugUtilsMessengerEXT(
+    void DebugMessenger::DestroyDebugUtilsMessengerEXT(
         VkInstance const& instance,
         VkDebugUtilsMessengerEXT debugMessenger,
         VkAllocationCallbacks const * pAllocator
@@ -36,26 +58,29 @@ namespace utils::vulkan {
     }
 
 
-    utils::Logger logger("Vulkan");
+    utils::vulkan::DebugMessenger::DebugMessenger(
+        std::shared_ptr<InstanceHandle> const& instanceHandle,
+        uint32_t const logMessageSeverities,
+        uint32_t const logMessageTypes
+    ) :
+        instanceHandle(instanceHandle)
+    {
+        VkDebugUtilsMessengerCreateInfoEXT createInfo {};
 
+        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity = logMessageSeverities;
+        createInfo.messageType = logMessageTypes;
+        createInfo.pfnUserCallback = debugMessageCallback;
+        createInfo.pUserData = nullptr;
 
-    VKAPI_ATTR VkBool32 VKAPI_CALL debugMessageCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-        VkDebugUtilsMessageTypeFlagsEXT messageType,
-        VkDebugUtilsMessengerCallbackDataEXT const * pCallbackData,
-        void * pUserData
-    ) {
-        if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-            ERROR(logger) << pCallbackData->pMessage << std::endl;
-        } else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-            WARN(logger) << pCallbackData->pMessage << std::endl;
-        } else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
-            INFO(logger) << pCallbackData->pMessage << std::endl;
-        } else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
-            TRACE(logger) << pCallbackData->pMessage << std::endl;
+        if (CreateDebugUtilsMessengerEXT(this->instanceHandle->vk, &createInfo, nullptr, &this->vk) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to set up debug messenger!");
         }
+    }
 
-        return VK_FALSE;
+
+    DebugMessenger::~DebugMessenger() {
+        DestroyDebugUtilsMessengerEXT(this->instanceHandle->vk, this->vk, nullptr);
     }
 
 }

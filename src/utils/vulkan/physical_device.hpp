@@ -1,9 +1,13 @@
 #pragma once
 
+#include "utils/vulkan/utils.hpp"
+#include "utils/vulkan/device.hpp"
+
 #include "vulkan/vulkan.h"
 
 #include <vector>
 #include <optional>
+#include <memory>
 
 
 namespace utils::vulkan {
@@ -18,10 +22,12 @@ namespace utils::vulkan {
 
     class PhysicalDevice {
     private:
+        std::shared_ptr<InstanceHandle> vkInstanceHandle;
+
         VkPhysicalDevice vkPhysicalDevice;
 
     public:
-        PhysicalDevice(VkPhysicalDevice const& vkPhysicalDevice);
+        PhysicalDevice(std::shared_ptr<InstanceHandle> const& vkInstanceHandle, VkPhysicalDevice const& vkPhysicalDevice);
 
         VkPhysicalDeviceProperties getProperties() const;
         VkPhysicalDeviceFeatures getFeatures() const;
@@ -45,9 +51,12 @@ namespace utils::vulkan {
          */
         uint32_t getScore(uint32_t const requiredQueueFlags) const;
 
-        VkPhysicalDevice& get() {
-            return vkPhysicalDevice;
-        }
+        /**
+         * @brief Create a logical device from this physical device.
+         * @param queueFamily QueueFamily object specifying family to use.
+         * @param queueCount uint32_t number of queues to allocate.
+         */
+        std::shared_ptr<Device> createLogicalDevice(uint32_t const requiredQueueFlags, uint32_t const queueCount) const;
     };
 
 }

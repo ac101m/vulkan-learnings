@@ -47,4 +47,32 @@ namespace utils::vulkan {
         }
     };
 
+
+    /**
+     * @brief Base class for vulkan object handles.
+     */
+    template<typename T>
+    struct VkHandle {
+        T * vk;
+    };
+
+
+    /**
+     * @brief Class for managing lifetime of VkInstance objects.
+     */
+    struct InstanceHandle : VkHandle<VkInstance_T> {
+        ~InstanceHandle() {
+            vkDestroyInstance(this->vk, nullptr);
+        }
+    };
+
+
+    /**
+     * @brief Class for managing lifetime of VkDevice objects;
+     */
+    struct DeviceHandle : VkHandle<VkDevice_T> {
+        ~DeviceHandle() {
+            vkDestroyDevice(this->vk, nullptr);
+        }
+    };
 }

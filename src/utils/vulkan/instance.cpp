@@ -1,5 +1,6 @@
 #include "utils/vulkan/instance.hpp"
 #include "utils/vulkan/utils.hpp"
+#include "utils/vulkan/debug.hpp"
 
 #include "GLFW/glfw3.h"
 
@@ -18,7 +19,9 @@ namespace utils::vulkan {
 
 
     Instance::Instance(std::vector<std::string> const& validationLayers) :
-        debugEnabled(validationLayers.size() > 0), validationLayers(validationLayers)
+        instanceHandle(std::make_shared<InstanceHandle>()),
+        debugEnabled(validationLayers.size() > 0),
+        validationLayers(validationLayers)
     {
         INFO(log) << "Creating instance. debug=" << this->debugEnabled << ", "
                   << "validation layers=" << validationLayers << std::endl;
@@ -60,52 +63,55 @@ namespace utils::vulkan {
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &debugCreateInfo;
         }
 
-        if (vkCreateInstance(&createInfo, nullptr, &this->vkInstance) != VK_SUCCESS) {
+        if (vkCreateInstance(&createInfo, nullptr, &this->instanceHandle->vk) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create vulkan instance!");
         }
 
         if (debugEnabled) {
-            VkDebugUtilsMessengerCreateInfoEXT createInfo {};
-
-            createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-            createInfo.messageSeverity = logMessageSeverities;
-            createInfo.messageType = logMessageTypes;
-            createInfo.pfnUserCallback = debugMessageCallback;
-            createInfo.pUserData = nullptr;
-
-            if (CreateDebugUtilsMessengerEXT(this->vkInstance, &createInfo, nullptr, &this->vkDebugMessenger) != VK_SUCCESS) {
-                throw std::runtime_error("Failed to set up debug messenger!");
-            }
+            debugMessenger = std::shared_ptr<DebugMessenger>(
+                new DebugMessenger(instanceHandle, logMessageSeverities, logMessageTypes));
         }
     }
 
 
-    Instance::~Instance() {
-        INFO(log) << "Destroying instance." << std::endl;
-
-        if (debugEnabled) {
-            DestroyDebugUtilsMessengerEXT(this->vkInstance, this->vkDebugMessenger, nullptr);
-        }
-
-        vkDestroyInstance(this->vkInstance, nullptr);
-    }
-
-
-    std::vector<PhysicalDevice> Instance::getPhysicalDevices() const {
+    std::vector<std::shared_ptr<PhysicalDevice>> Instance::getPhysicalDevices() const {
         uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(this->vkInstance, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(this->instanceHandle->vk, &deviceCount, nullptr);
 
         std::vector<VkPhysicalDevice> vkDevices(deviceCount);
-        vkEnumeratePhysicalDevices(this->vkInstance, &deviceCount, vkDevices.data());
+        vkEnumeratePhysicalDevices(this->instanceHandle->vk, &deviceCount, vkDevices.data());
 
-        std::vector<PhysicalDevice> devices;
+        std::vector<std::shared_ptr<PhysicalDevice>> devices;
         devices.reserve(deviceCount);
 
         for (auto const& vkDevice : vkDevices) {
-            devices.push_back(PhysicalDevice(vkDevice));
+            devices.push_back(std::make_shared<PhysicalDevice>(this->instanceHandle, vkDevice));
         }
 
         return devices;
+    }
+
+
+    std::shared_ptr<PhysicalDevice> Instance::selectPhysicalDevice(uint32_t const requiredQueueFlags) const {
+        auto const devices = this->getPhysicalDevices();
+
+        uint32_t highScore = 0;
+        std::shared_ptr<PhysicalDevice> const * bestDevice;
+
+        for (auto const& device : devices) {
+            uint32_t const score = device->getScore(requiredQueueFlags);
+
+            if (score > highScore) {
+                highScore = score;
+                bestDevice = &device;
+            }
+        }
+
+        if (highScore == 0) {
+            throw std::runtime_error("No suitable vulkan devices.");
+        }
+
+        return *bestDevice;
     }
 
 

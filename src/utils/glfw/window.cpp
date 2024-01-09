@@ -22,7 +22,6 @@ namespace utils::glfw {
 
 
     Window::~Window() {
-        INFO(log) << "Destroying window" << std::endl;
         glfwDestroyWindow(this->window);
     }
 
