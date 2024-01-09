@@ -1,5 +1,4 @@
 #include "utils/vulkan/instance.hpp"
-#include "utils/vulkan/utils.hpp"
 #include "utils/vulkan/debug.hpp"
 
 #include "GLFW/glfw3.h"

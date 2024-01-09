@@ -1,5 +1,4 @@
 #include "utils/vulkan/device.hpp"
-#include "utils/vulkan/utils.hpp"
 
 #include "vulkan/vulkan.h"
 

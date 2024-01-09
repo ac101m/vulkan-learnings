@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils/vulkan/utils.hpp"
+#include "utils/vulkan/helpers.hpp"
 #include "utils/vulkan/debug.hpp"
 #include "utils/vulkan/physical_device.hpp"
 #include "utils/misc/logging.hpp"
