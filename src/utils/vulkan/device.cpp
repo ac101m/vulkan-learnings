@@ -16,7 +16,9 @@ namespace utils::vulkan {
         std::vector<std::string> const& validationLayerNames
     ) :
         vkInstanceHandle(vkInstanceHandle),
-        vkDeviceHandle(std::make_shared<DeviceHandle>())
+        vkDeviceHandle(std::make_shared<DeviceHandle>()),
+        queueFamilyIndex(queueFamilyIndex),
+        queueCount(queueCount)
     {
         INFO(log) << "Creating logical device." << std::endl;
 
@@ -43,6 +45,15 @@ namespace utils::vulkan {
         if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &this->vkDeviceHandle->vk) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create logical device.");
         }
+    }
+
+
+    std::shared_ptr<Queue> Device::getQueue(uint32_t const index) {
+        if (index >= this->queueCount) {
+            throw std::runtime_error("Attempt to retrieve queue out of bounds.");
+        }
+
+        return std::make_shared<Queue>(this->vkDeviceHandle, index, this->queueFamilyIndex);
     }
 
 }

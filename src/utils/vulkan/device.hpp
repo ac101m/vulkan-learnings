@@ -1,6 +1,7 @@
 #pragma once
 
 #include "utils/vulkan/helpers.hpp"
+#include "utils/vulkan/queue.hpp"
 
 #include "utils/misc/logging.hpp"
 
@@ -20,6 +21,9 @@ namespace utils::vulkan {
         std::shared_ptr<InstanceHandle> vkInstanceHandle;
         std::shared_ptr<DeviceHandle> vkDeviceHandle;
 
+        uint32_t const queueFamilyIndex;
+        uint32_t const queueCount;
+
     public:
         /**
          * @brief Construct and initialize a new logical device instance.
@@ -35,6 +39,13 @@ namespace utils::vulkan {
             uint32_t const queueFamilyIndex,
             uint32_t const queueCount,
             std::vector<std::string> const& validationLayerNames = std::vector<std::string>());
+
+        /**
+         * @brief Get a device queue.
+         * @param index Index of the queue to retrieve.
+         * @return std::shared_ptr to a Queue object.
+         */
+        std::shared_ptr<Queue> getQueue(uint32_t const index);
     };
 
 }

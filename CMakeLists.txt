@@ -17,7 +17,8 @@ set(UTILS_SOURCE_SET
     src/utils/vulkan/debug.cpp
     src/utils/vulkan/physical_device.cpp
     src/utils/vulkan/device.cpp
-    src/utils/vulkan/helpers.cpp)
+    src/utils/vulkan/helpers.cpp
+    src/utils/vulkan/queue.cpp)
 
 set(MAIN_SOURCE_SET
     ${UTILS_SOURCE_SET}

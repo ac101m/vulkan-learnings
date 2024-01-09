@@ -23,6 +23,7 @@ private:
     std::shared_ptr<utils::vulkan::Instance> vkInstance;
     std::shared_ptr<utils::vulkan::PhysicalDevice> vkPhysicalDevice;
     std::shared_ptr<utils::vulkan::Device> vkDevice;
+    std::shared_ptr<utils::vulkan::Queue> vkGraphicsQueue;
 
     std::vector<std::string> const debugValidationLayers = {
         "VK_LAYER_KHRONOS_validation"
@@ -40,7 +41,8 @@ public:
 
         INFO(log) << "Selected physical device '" << this->vkPhysicalDevice->getProperties().deviceName << '\'' << std::endl;
 
-        auto logicalDevice = this->vkPhysicalDevice->createLogicalDevice(deviceQueueFlags, 1);
+        this->vkDevice = this->vkPhysicalDevice->createLogicalDevice(deviceQueueFlags, 1);
+        this->vkGraphicsQueue = this->vkDevice->getQueue(0);
 
         this->glfwWindow = std::make_shared<utils::glfw::Window>("Vulkan learnings", windowWidth, windowHeight);
     }
