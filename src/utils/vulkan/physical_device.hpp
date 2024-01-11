@@ -22,6 +22,8 @@ namespace utils::vulkan {
 
     class PhysicalDevice {
     private:
+        static utils::Logger log;
+
         std::shared_ptr<InstanceHandle> vkInstanceHandle;
 
         VkPhysicalDevice vkPhysicalDevice;
@@ -40,23 +42,25 @@ namespace utils::vulkan {
 
         /**
          * @brief Select a queue family based on required queue properties.
+         * @param queueConstraints QueueConstraints object specifying required queue properties.
          * @return std::optional of QueueFamily object which contains the queue
          * family index and it's properties.
          */
-        std::optional<QueueFamily> selectQueueFamily(uint32_t const requiredQueueFlags) const;
+        std::optional<QueueFamily> selectQueueFamily(QueueConstraints const& queueConstraints) const;
 
         /**
          * @brief Get a device suitability score based on device characteristics.
+         * @param queuePlan Queue plan object containing set of required queues.
          * @return Device suitability score as uint32_t, higher is better. 0 means device is unsuitable.
          */
-        uint32_t getScore(uint32_t const requiredQueueFlags) const;
+        uint32_t getScore(QueuePlan const& queuePlan) const;
 
         /**
          * @brief Create a logical device from this physical device.
          * @param queueFamily QueueFamily object specifying family to use.
          * @param queueCount uint32_t number of queues to allocate.
          */
-        std::shared_ptr<Device> createLogicalDevice(uint32_t const requiredQueueFlags, uint32_t const queueCount) const;
+        std::shared_ptr<Device> createLogicalDevice(QueuePlan const& queuePlan) const;
     };
 
 }

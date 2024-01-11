@@ -3,6 +3,9 @@
 
 namespace utils::vulkan {
 
+    utils::Logger PhysicalDevice::log("PhysicalDevice");
+
+
     QueueFamily::QueueFamily(uint32_t const index, VkQueueFamilyProperties const properties) :
         index(index), properties(properties) {}
 
@@ -35,37 +38,56 @@ namespace utils::vulkan {
     }
 
 
-     std::optional<QueueFamily> PhysicalDevice::selectQueueFamily(uint32_t const requiredQueueFlags) const {
+     std::optional<QueueFamily> PhysicalDevice::selectQueueFamily(QueueConstraints const& queueConstraints) const {
         auto const queueFamilyProperties = getQueueFamilyProperties();
 
         for (unsigned i = 0; i < queueFamilyProperties.size(); i++) {
             auto const& properties = queueFamilyProperties[i];
 
-            // Check if queue family supports
-            if ((properties.queueFlags & requiredQueueFlags) == requiredQueueFlags) {
-                return QueueFamily(i, properties);
+            // Check if queue family supports required queue operations
+            if ((properties.queueFlags & queueConstraints.requiredFlags) != queueConstraints.requiredFlags) {
+                continue;
             }
+
+            // Check present requirements if provided
+            if (queueConstraints.presentSurface != nullptr) {
+                VkBool32 supported = false;
+
+                vkGetPhysicalDeviceSurfaceSupportKHR(
+                    this->vkPhysicalDevice, i,
+                    queueConstraints.presentSurface->getHandle()->vk,
+                    &supported);
+
+                if (!supported) {
+                    continue;
+                }
+            }
+
+            return QueueFamily(i, properties);
         }
 
         return std::optional<QueueFamily>();
     }
 
 
-    uint32_t PhysicalDevice::getScore(uint32_t const requiredQueueFlags) const {
+    uint32_t PhysicalDevice::getScore(QueuePlan const& queuePlan) const {
         uint32_t score = 0;
 
         auto const features = getFeatures();
 
-        // Can't do anything without geometry!'
+        // Can't draw anything without geometry!'
         if (!features.geometryShader) {
             return 0;
         }
 
-        auto const queueFamily = selectQueueFamily(requiredQueueFlags);
+        // Check that all the required queue constraints are met
+        for (auto const& entry : queuePlan.queues) {
+            auto const& queueConstraints = entry.second;
 
-        // Missing queue families
-        if (!queueFamily.has_value()) {
-            return 0;
+            // No queue family with apropriate features found!
+            if (!selectQueueFamily(queueConstraints).has_value()) {
+                return 0;
+            }
         }
 
         auto const properties = getProperties();
@@ -79,14 +101,23 @@ namespace utils::vulkan {
     }
 
 
-    std::shared_ptr<Device> PhysicalDevice::createLogicalDevice(uint32_t const requiredQueueFlags, uint32_t const queueCount) const {
-        auto const queueFamily = selectQueueFamily(requiredQueueFlags);
+    std::shared_ptr<Device> PhysicalDevice::createLogicalDevice(QueuePlan const& queuePlan) const {
+        std::map<std::string, uint32_t> queueFamilyIndexMap;
 
-        if (!queueFamily.has_value()) {
-            throw std::runtime_error("Cannot create logical device, no queue family matches requirements.");
+        for (auto const& entry : queuePlan.queues) {
+            auto const& queueName = entry.first;
+            auto const& queueConstraints = entry.second;
+
+            auto const queueFamily = selectQueueFamily(queueConstraints);
+
+            if (!queueFamily.has_value()) {
+                throw std::runtime_error("Device does not support required queues.");
+            }
+
+            queueFamilyIndexMap[queueName] = queueFamily.value().index;
         }
 
-        return std::make_shared<Device>(this->vkInstanceHandle, this->vkPhysicalDevice, queueFamily.value().index, queueCount);
+        return std::make_shared<Device>(this->vkInstanceHandle, this->vkPhysicalDevice, queueFamilyIndexMap);
     }
 
 }

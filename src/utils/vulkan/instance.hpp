@@ -1,9 +1,11 @@
 #pragma once
 
-#include "utils/vulkan/helpers.hpp"
+#include "utils/vulkan/handles.hpp"
 #include "utils/vulkan/debug.hpp"
 #include "utils/vulkan/physical_device.hpp"
+#include "utils/vulkan/surface.hpp"
 #include "utils/misc/logging.hpp"
+#include "utils/glfw/window.hpp"
 
 #include "vulkan/vulkan.h"
 
@@ -13,7 +15,6 @@
 
 
 namespace utils::vulkan {
-
 
     class Instance {
     private:
@@ -48,6 +49,13 @@ namespace utils::vulkan {
         Instance(std::vector<std::string> const& validationLayers);
 
         /**
+         * @brief Create a window surface for rendering.
+         * @param window Shared pointer to a glfw window object.
+         * @return Shared pointer to Surface object.
+         */
+        std::shared_ptr<Surface> createWindowSurface(std::shared_ptr<utils::glfw::Window> const& window) const;
+
+        /**
          * @brief Retrieve list of physical devices.
          * @return std::vector of shared pointers to PhysicalDevice objects.
          */
@@ -55,10 +63,10 @@ namespace utils::vulkan {
 
         /**
          * @brief Select a physical device based on device suitability and scoring.
-         * @param requiredQueueFlags Queue flags which must be supported for a device to be suitable.
+         * @param queuePlan QueuePlan object containing set of required queues.
          * @return shared pointer to physical device matching desired characteristics.
          */
-        std::shared_ptr<PhysicalDevice> selectPhysicalDevice(uint32_t const requiredQueueFlags) const;
+        std::shared_ptr<PhysicalDevice> selectPhysicalDevice(QueuePlan const& queuePlan) const;
     };
 
 }

@@ -17,7 +17,14 @@ namespace utils::vulkan {
         VkQueue_T * vkQueue;
 
     public:
-        Queue(std::shared_ptr<DeviceHandle> const& vkDeviceHandle, uint32_t const queueFamilyIndex, uint32_t const queueIndex);
+        std::string const name;
+
+    public:
+        Queue(
+            std::shared_ptr<DeviceHandle> const& vkDeviceHandle,
+            uint32_t const queueFamilyIndex,
+            uint32_t const queueIndex,
+            std::string const& name);
     };
 
 }

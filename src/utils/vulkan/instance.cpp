@@ -73,6 +73,11 @@ namespace utils::vulkan {
     }
 
 
+    std::shared_ptr<Surface> Instance::createWindowSurface(std::shared_ptr<utils::glfw::Window> const& window) const {
+        return std::make_shared<Surface>(this->instanceHandle, window->getHandle());
+    }
+
+
     std::vector<std::shared_ptr<PhysicalDevice>> Instance::getPhysicalDevices() const {
         uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(this->instanceHandle->vk, &deviceCount, nullptr);
@@ -91,14 +96,14 @@ namespace utils::vulkan {
     }
 
 
-    std::shared_ptr<PhysicalDevice> Instance::selectPhysicalDevice(uint32_t const requiredQueueFlags) const {
+    std::shared_ptr<PhysicalDevice> Instance::selectPhysicalDevice(QueuePlan const& queuePlan) const {
         auto const devices = this->getPhysicalDevices();
 
         uint32_t highScore = 0;
         std::shared_ptr<PhysicalDevice> const * bestDevice;
 
         for (auto const& device : devices) {
-            uint32_t const score = device->getScore(requiredQueueFlags);
+            uint32_t const score = device->getScore(queuePlan);
 
             if (score > highScore) {
                 highScore = score;

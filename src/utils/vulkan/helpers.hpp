@@ -1,11 +1,14 @@
 #pragma once
 
 #include "utils/misc/string.hpp"
+#include "utils/vulkan/surface.hpp"
 
 #include "vulkan/vulkan.h"
 
 #include <vector>
 #include <string>
+#include <map>
+#include <memory>
 
 
 namespace utils::vulkan {
@@ -49,25 +52,36 @@ namespace utils::vulkan {
 
 
     /**
-     * @brief Class for managing lifetime of VkInstance objects.
+     * @brief Helper class for representing the requirements of a queue.
      */
-    struct InstanceHandle {
-        VkInstance_T * vk;
+    struct QueueConstraints {
+        uint32_t requiredFlags;
+        std::shared_ptr<Surface> presentSurface;
 
-        ~InstanceHandle() {
-            vkDestroyInstance(this->vk, nullptr);
-        }
+        /**
+         * @brief All parameters constructor.
+         * @param requiredFlags Required queue flags.
+         * @param presentSurface Shared pointer to a present surface that the queue must support.
+         */
+        QueueConstraints(
+            uint32_t const requiredFlags,
+            std::shared_ptr<Surface> const& presentSurface
+        ):
+            requiredFlags(requiredFlags),
+            presentSurface(presentSurface)
+        {}
     };
 
 
     /**
-     * @brief Class for managing lifetime of VkDevice objects.
+     * @brief Helper class for containing named queue requirements.
      */
-    struct DeviceHandle {
-        VkDevice_T * vk;
+    class QueuePlan {
+    public:
+        std::map<std::string, QueueConstraints> queues;
 
-        ~DeviceHandle() {
-            vkDestroyDevice(this->vk, nullptr);
+        void addQueue(std::string const& name, QueueConstraints const& requirements) {
+            queues.insert(std::make_pair(name, requirements));
         }
     };
 

@@ -1,11 +1,15 @@
 #pragma once
 
-#include "utils/misc/logging.hpp"
-
 #define GLFW_INCLUDE_VULKAN
+
+#include "utils/misc/logging.hpp"
+#include "utils/glfw/handles.hpp"
+
 #include <GLFW/glfw3.h>
 
 #include <stdint.h>
+#include <memory>
+#include <string>
 
 
 namespace utils::glfw {
@@ -15,15 +19,22 @@ namespace utils::glfw {
      */
     class Window {
     private:
-        GLFWwindow* window = nullptr;
+        static utils::Logger log;
+
+        std::shared_ptr<WindowHandle> windowHandle;
 
         std::string const name;
 
-        static utils::Logger log;
-
     public:
         Window(std::string const name, uint32_t const width, uint32_t const height);
-        ~Window();
+
+        /**
+         * @brief Return a reference counted copy of the window handle.
+         * @return Shared pointer of glfw window handle.
+         */
+        std::shared_ptr<WindowHandle> getHandle() {
+            return this->windowHandle;
+        }
 
         /**
          * @brief Wrapper around glfwWindowShouldClose(window).
