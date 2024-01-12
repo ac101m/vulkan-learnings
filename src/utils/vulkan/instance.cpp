@@ -96,14 +96,16 @@ namespace utils::vulkan {
     }
 
 
-    std::shared_ptr<PhysicalDevice> Instance::selectPhysicalDevice(QueuePlan const& queuePlan) const {
+    std::shared_ptr<PhysicalDevice> Instance::selectPhysicalDevice(
+        QueuePlan const& queuePlan, std::vector<std::string> const& requiredExtensions
+    ) const {
         auto const devices = this->getPhysicalDevices();
 
         uint32_t highScore = 0;
         std::shared_ptr<PhysicalDevice> const * bestDevice;
 
         for (auto const& device : devices) {
-            uint32_t const score = device->getScore(queuePlan);
+            uint32_t const score = device->getScore(queuePlan, requiredExtensions);
 
             if (score > highScore) {
                 highScore = score;

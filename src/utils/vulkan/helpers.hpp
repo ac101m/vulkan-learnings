@@ -21,7 +21,7 @@ namespace utils::vulkan {
 
 
     /**
-     * @brief Utility class to manage the passing of parameters to vulkan API functions.
+     * @brief Utility class to manage the passing of string parameters to vulkan API functions.
      */
     class StringParameters {
     private:

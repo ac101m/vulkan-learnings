@@ -31,13 +31,15 @@ namespace utils::vulkan {
          * @brief Construct and initialize a new logical device instance.
          * @param vkInstanceHandle std::shared_ptr to utils::vulkan::Instance.
          * @param physicalDevice VkPhysicalDevice object instance designating the desired GPU.
-         * @param queueFamilyIndexMap std::map of queue names to queue family indices.
-         * @param validationLayerNames std::vector of std::string containing device validation layers (optional).
+         * @param queueFamilyIndexMap Map of queue names to queue family indices.
+         * @param deviceExtensions Vector of strings specifying required device extensions.
+         * @param validationLayerNames Vector of strings containing device validation layers (optional).
          */
         Device(
             std::shared_ptr<InstanceHandle> const& vkInstanceHandle,
             VkPhysicalDevice const& physicalDevice,
             std::map<std::string, uint32_t> const& queueFamilyIndexMap,
+            std::vector<std::string> const& deviceExtensions,
             std::vector<std::string> const& validationLayerNames = std::vector<std::string>());
 
         /**

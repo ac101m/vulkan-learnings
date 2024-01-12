@@ -1,5 +1,8 @@
 #include "utils/vulkan/physical_device.hpp"
 
+#include <set>
+#include <algorithm>
+
 
 namespace utils::vulkan {
 
@@ -38,7 +41,7 @@ namespace utils::vulkan {
     }
 
 
-     std::optional<QueueFamily> PhysicalDevice::selectQueueFamily(QueueConstraints const& queueConstraints) const {
+    std::optional<QueueFamily> PhysicalDevice::selectQueueFamily(QueueConstraints const& queueConstraints) const {
         auto const queueFamilyProperties = getQueueFamilyProperties();
 
         for (unsigned i = 0; i < queueFamilyProperties.size(); i++) {
@@ -70,13 +73,48 @@ namespace utils::vulkan {
     }
 
 
-    uint32_t PhysicalDevice::getScore(QueuePlan const& queuePlan) const {
+    bool PhysicalDevice::checkExtensionSupport(std::vector<std::string> const& requiredExtensions) const {
+        if (requiredExtensions.size() == 0) {
+            return true;
+        }
+
+        uint32_t extensionCount = 0;
+        vkEnumerateDeviceExtensionProperties(this->vkPhysicalDevice, nullptr, &extensionCount, nullptr);
+
+        std::vector<VkExtensionProperties> supportedExtensions(extensionCount);
+        vkEnumerateDeviceExtensionProperties(this->vkPhysicalDevice, nullptr, &extensionCount, supportedExtensions.data());
+
+        for (auto const& requiredExtension : requiredExtensions) {
+            bool found = false;
+
+            for (auto const& supportedExtension : supportedExtensions) {
+                if (requiredExtension == supportedExtension.extensionName) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+
+    uint32_t PhysicalDevice::getScore(QueuePlan const& queuePlan, std::vector<std::string> const& requiredExtensions) const {
         uint32_t score = 0;
 
         auto const features = getFeatures();
 
         // Can't draw anything without geometry!'
         if (!features.geometryShader) {
+            return 0;
+        }
+
+        // Check for support of required extensions
+        if (!checkExtensionSupport(requiredExtensions)) {
             return 0;
         }
 
@@ -101,7 +139,10 @@ namespace utils::vulkan {
     }
 
 
-    std::shared_ptr<Device> PhysicalDevice::createLogicalDevice(QueuePlan const& queuePlan) const {
+    std::shared_ptr<Device> PhysicalDevice::createLogicalDevice(
+        QueuePlan const& queuePlan,
+        std::vector<std::string> const& deviceExtensions
+    ) const {
         std::map<std::string, uint32_t> queueFamilyIndexMap;
 
         for (auto const& entry : queuePlan.queues) {
@@ -117,7 +158,7 @@ namespace utils::vulkan {
             queueFamilyIndexMap[queueName] = queueFamily.value().index;
         }
 
-        return std::make_shared<Device>(this->vkInstanceHandle, this->vkPhysicalDevice, queueFamilyIndexMap);
+        return std::make_shared<Device>(this->vkInstanceHandle, this->vkPhysicalDevice, queueFamilyIndexMap, deviceExtensions);
     }
 
 }

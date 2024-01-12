@@ -30,6 +30,7 @@ namespace utils::vulkan {
         std::shared_ptr<InstanceHandle> const& vkInstanceHandle,
         VkPhysicalDevice const& physicalDevice,
         std::map<std::string, uint32_t> const& queueFamilyIndexMap,
+        std::vector<std::string> const& deviceExtensions,
         std::vector<std::string> const& validationLayerNames
     ) :
         vkInstanceHandle(vkInstanceHandle),
@@ -58,14 +59,17 @@ namespace utils::vulkan {
         VkPhysicalDeviceFeatures deviceFeatures {};
 
         auto const validationLayerParams = StringParameters(validationLayerNames);
+        auto const deviceExtensionParams = StringParameters(deviceExtensions);
 
         VkDeviceCreateInfo createInfo {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        createInfo.queueCreateInfoCount = queueCreateInfos.size();
-        createInfo.pQueueCreateInfos = queueCreateInfos.data();
         createInfo.pEnabledFeatures = &deviceFeatures;
-        createInfo.enabledLayerCount = validationLayerParams.size();
+        createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+        createInfo.pQueueCreateInfos = queueCreateInfos.data();
+        createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayerParams.size());
         createInfo.ppEnabledLayerNames = validationLayerParams.data();
+        createInfo.enabledExtensionCount = deviceExtensionParams.size();
+        createInfo.ppEnabledExtensionNames = deviceExtensionParams.data();
 
         if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &this->vkDeviceHandle->vk) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create logical device.");

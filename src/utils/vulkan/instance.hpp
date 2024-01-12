@@ -64,9 +64,12 @@ namespace utils::vulkan {
         /**
          * @brief Select a physical device based on device suitability and scoring.
          * @param queuePlan QueuePlan object containing set of required queues.
+         * @param requiredExtensions Vector of strings specifying required device extensions (defaults to none).
          * @return shared pointer to physical device matching desired characteristics.
          */
-        std::shared_ptr<PhysicalDevice> selectPhysicalDevice(QueuePlan const& queuePlan) const;
+        std::shared_ptr<PhysicalDevice> selectPhysicalDevice(
+            QueuePlan const& queuePlan,
+            std::vector<std::string> const& requiredExtensions = std::vector<std::string>()) const;
     };
 
 }

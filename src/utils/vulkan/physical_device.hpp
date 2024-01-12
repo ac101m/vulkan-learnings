@@ -49,18 +49,27 @@ namespace utils::vulkan {
         std::optional<QueueFamily> selectQueueFamily(QueueConstraints const& queueConstraints) const;
 
         /**
+         * @brief Check if this device supports provided extensions.
+         * @param requiredExtensions vector of strings containing the names of required extensions.
+         * @return boolean true if all extensions are supported, false otherwise.
+         */
+        bool checkExtensionSupport(std::vector<std::string> const& requiredExtensions) const;
+
+        /**
          * @brief Get a device suitability score based on device characteristics.
          * @param queuePlan Queue plan object containing set of required queues.
          * @return Device suitability score as uint32_t, higher is better. 0 means device is unsuitable.
          */
-        uint32_t getScore(QueuePlan const& queuePlan) const;
+        uint32_t getScore(QueuePlan const& queuePlan, std::vector<std::string> const& requiredExtensions) const;
 
         /**
          * @brief Create a logical device from this physical device.
          * @param queueFamily QueueFamily object specifying family to use.
-         * @param queueCount uint32_t number of queues to allocate.
+         * @param deviceExtensions Vector of strings containing the names of required extensions, defaults to empty vector.
          */
-        std::shared_ptr<Device> createLogicalDevice(QueuePlan const& queuePlan) const;
+        std::shared_ptr<utils::vulkan::Device> createLogicalDevice(
+            QueuePlan const& queuePlan,
+            std::vector<std::string> const& deviceExtensions) const;
     };
 
 }

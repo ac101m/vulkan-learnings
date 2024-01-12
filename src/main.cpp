@@ -32,6 +32,10 @@ private:
         "VK_LAYER_KHRONOS_validation"
     };
 
+    std::vector<std::string> const requiredDeviceExtensions = {
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME
+    };
+
     std::string const graphicsQueueName = "GRAPHICS_QUEUE";
     std::string const presentQueueName = "PRESENT_QUEUE";
 
@@ -62,11 +66,11 @@ public:
 
         auto const queuePlan = createQueuePlan();
 
-        this->vkPhysicalDevice = this->vkInstance->selectPhysicalDevice(queuePlan);
+        this->vkPhysicalDevice = this->vkInstance->selectPhysicalDevice(queuePlan, requiredDeviceExtensions);
 
         INFO(log) << "Selected physical device '" << this->vkPhysicalDevice->getProperties().deviceName << '\'' << std::endl;
 
-        this->vkDevice = this->vkPhysicalDevice->createLogicalDevice(queuePlan);
+        this->vkDevice = this->vkPhysicalDevice->createLogicalDevice(queuePlan, requiredDeviceExtensions);
         this->vkGraphicsQueue = this->vkDevice->getQueue(graphicsQueueName);
         this->vkPresentQueue = this->vkDevice->getQueue(presentQueueName);
     }
