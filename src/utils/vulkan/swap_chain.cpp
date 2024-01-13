@@ -85,6 +85,30 @@ namespace utils::vulkan {
         if (vkCreateSwapchainKHR(this->vkDeviceHandle->vk, &createInfo, nullptr, &this->vkSwapChainHandle->vk)) {
             throw std::runtime_error("Failed to create swap chain.");
         }
+
+        populateImageList();
+    }
+
+
+    void SwapChain::populateImageList() {
+        uint32_t imageCount;
+        vkGetSwapchainImagesKHR(this->vkDeviceHandle->vk, this->vkSwapChainHandle->vk, &imageCount, nullptr);
+
+        std::vector<VkImage> swapChainImages(imageCount);
+        vkGetSwapchainImagesKHR(this->vkDeviceHandle->vk, this->vkSwapChainHandle->vk, &imageCount, swapChainImages.data());
+
+        for (auto const& swapChainImage : swapChainImages) {
+            this->images.push_back(std::make_shared<Image>(swapChainImage, this->vkSwapChainHandle));
+        }
+    }
+
+
+    std::shared_ptr<Image> SwapChain::getImage(uint32_t const index) {
+        if (index >= this->images.size()) {
+            throw std::runtime_error("Swap chain image index out of range.");
+        }
+
+        return this->images[index];
     }
 
 }

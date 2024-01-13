@@ -20,7 +20,8 @@ set(UTILS_SOURCE_SET
     src/utils/vulkan/helpers.cpp
     src/utils/vulkan/queue.cpp
     src/utils/vulkan/surface.cpp
-    src/utils/vulkan/swap_chain.cpp)
+    src/utils/vulkan/swap_chain.cpp
+    src/utils/vulkan/image.cpp)
 
 set(MAIN_SOURCE_SET
     ${UTILS_SOURCE_SET}

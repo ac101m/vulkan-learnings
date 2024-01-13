@@ -2,8 +2,10 @@
 
 #include "utils/misc/logging.hpp"
 #include "utils/vulkan/handles.hpp"
+#include "utils/vulkan/image.hpp"
 
 #include <set>
+#include <vector>
 
 
 namespace utils::vulkan {
@@ -66,14 +68,26 @@ namespace utils::vulkan {
         std::shared_ptr<DeviceHandle> const vkDeviceHandle;
         std::shared_ptr<SurfaceHandle> const vkSurfaceHandle;
 
+        std::vector<std::shared_ptr<Image>> images;
+
     public:
         SwapChainConfig const config;
+
+    private:
+        void populateImageList();
 
     public:
         SwapChain(
             std::shared_ptr<DeviceHandle> const& vkDeviceHandle,
             std::shared_ptr<SurfaceHandle> const& vkSurfaceHandle,
             SwapChainConfig const& config);
+
+        /**
+         * @brief Access swap chain images.
+         * @param index uint32_t index of image to return.
+         * @return std::shared_ptr<Image> of the selected image.
+         */
+        std::shared_ptr<Image> getImage(uint32_t const index);
     };
 
 }
