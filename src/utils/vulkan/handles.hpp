@@ -37,7 +37,7 @@ namespace utils::vulkan {
     /**
      * @brief Class for managing lifetime of VkSurface objects.
      */
-    struct SurfaceHandle {
+    class SurfaceHandle {
     private:
         std::shared_ptr<InstanceHandle> const instanceHandle;
 
@@ -56,7 +56,7 @@ namespace utils::vulkan {
     /**
      * @brief Class for managing lifetime of VkSwapChain objects.
      */
-    struct SwapChainHandle {
+    class SwapChainHandle {
     private:
         std::shared_ptr<DeviceHandle> const deviceHandle;
 
@@ -68,6 +68,49 @@ namespace utils::vulkan {
 
         ~SwapChainHandle() {
             vkDestroySwapchainKHR(this->deviceHandle->vk, this->vk, nullptr);
+        }
+    };
+
+
+    /**
+     * @brief Class for managing lifetime of VkImage objects.
+     */
+    class ImageHandle {
+    private:
+        std::shared_ptr<DeviceHandle> const& deviceHandle;
+        std::shared_ptr<SwapChainHandle> const& owningSwapChain;
+
+    public:
+        VkImage_T * vk;
+
+        ImageHandle(
+            std::shared_ptr<DeviceHandle> const& deviceHandle,
+            std::shared_ptr<SwapChainHandle> const& owningSwapChain = nullptr
+        ) : deviceHandle(deviceHandle), owningSwapChain(owningSwapChain) {}
+
+        ~ImageHandle() {
+            if (owningSwapChain == nullptr) {
+                vkDestroyImage(this->deviceHandle->vk, this->vk, nullptr);
+            }
+        }
+    };
+
+
+    /**
+     * @brief Class for managing lifetime of VkImageView objects.
+     */
+    class ImageViewHandle {
+    private:
+        std::shared_ptr<DeviceHandle> const deviceHandle;
+
+    public:
+        VkImageView_T * vk;
+
+        ImageViewHandle(std::shared_ptr<DeviceHandle> const deviceHandle) :
+            deviceHandle(deviceHandle) {}
+
+        ~ImageViewHandle() {
+            vkDestroyImageView(this->deviceHandle->vk, this->vk, nullptr);
         }
     };
 }

@@ -69,6 +69,7 @@ namespace utils::vulkan {
         std::shared_ptr<SurfaceHandle> const vkSurfaceHandle;
 
         std::vector<std::shared_ptr<Image>> images;
+        std::vector<std::shared_ptr<ImageView>> imageViews;
 
     public:
         SwapChainConfig const config;
@@ -83,11 +84,17 @@ namespace utils::vulkan {
             SwapChainConfig const& config);
 
         /**
-         * @brief Access swap chain images.
-         * @param index uint32_t index of image to return.
-         * @return std::shared_ptr<Image> of the selected image.
+         * @brief Access swap chain images individually.
+         * @return Vector containing shared pointers to swap chain images.
          */
-        std::shared_ptr<Image> getImage(uint32_t const index);
+        std::vector<std::shared_ptr<Image>> getImages() const;
+
+        /**
+         * @brief Create image views for all swap chain images.
+         * @param config ImageViewConfig containing image view configuration info.
+         * @return Vector containing shared pointers to image views.
+         */
+        std::vector<std::shared_ptr<ImageView>> getImageViews(ImageViewConfig const& config);
     };
 
 }

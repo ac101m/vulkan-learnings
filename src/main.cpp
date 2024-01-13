@@ -24,11 +24,14 @@ private:
     std::shared_ptr<utils::glfw::Window> glfwWindow;
     std::shared_ptr<utils::vulkan::Instance> vkInstance;
     std::shared_ptr<utils::vulkan::Surface> vkPresentSurface;
+
     std::shared_ptr<utils::vulkan::PhysicalDevice> vkPhysicalDevice;
     std::shared_ptr<utils::vulkan::Device> vkDevice;
-    std::shared_ptr<utils::vulkan::SwapChain> vkSwapChain;
     std::shared_ptr<utils::vulkan::Queue> vkGraphicsQueue;
     std::shared_ptr<utils::vulkan::Queue> vkPresentQueue;
+
+    std::shared_ptr<utils::vulkan::SwapChain> vkSwapChain;
+    std::vector<std::shared_ptr<utils::vulkan::ImageView>> vkSwapChainImageViews;
 
     std::vector<std::string> const debugValidationLayers = {
         "VK_LAYER_KHRONOS_validation"
@@ -163,6 +166,14 @@ public:
         auto const swapChainConfig  = buildSwapChainConfig();
 
         this->vkSwapChain = this->vkDevice->createSwapChain(this->vkPresentSurface, swapChainConfig);
+
+        utils::vulkan::ImageViewConfig swapChainImageViewConfig;
+        swapChainImageViewConfig.imageFormat = this->vkSwapChain->config.surfaceFormat.format;
+        swapChainImageViewConfig.viewType = VK_IMAGE_VIEW_TYPE_2D;
+
+        for (auto const& image : this->vkSwapChain->getImages()) {
+            vkSwapChainImageViews.push_back(image->createImageView(swapChainImageViewConfig));
+        }
     }
 
 

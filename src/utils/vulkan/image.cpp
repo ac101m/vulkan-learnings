@@ -6,10 +6,14 @@ namespace utils::vulkan {
     utils::Logger Image::log("Image");
 
 
-    Image::Image(VkImage const& vkImage, std::shared_ptr<SwapChainHandle> const& vkSwapChainHandle) :
-        vkImage(vkImage), vkSwapChainHandle(vkSwapChainHandle)
+    Image::Image(std::shared_ptr<ImageHandle> const& vkImageHandle, std::shared_ptr<DeviceHandle> const& vkDeviceHandle) :
+        vkImageHandle(vkImageHandle), vkDeviceHandle(vkDeviceHandle)
     {
-        INFO(log) << "Creating image." << std::endl;
+        INFO(log) << "Wrapping swap chain image." << std::endl;
     }
 
+
+    std::shared_ptr<ImageView> Image::createImageView(ImageViewConfig const& config) {
+        return std::make_shared<ImageView>(this->vkDeviceHandle, this->vkImageHandle, config);
+    }
 }

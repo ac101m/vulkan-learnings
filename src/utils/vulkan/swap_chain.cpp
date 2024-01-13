@@ -98,17 +98,30 @@ namespace utils::vulkan {
         vkGetSwapchainImagesKHR(this->vkDeviceHandle->vk, this->vkSwapChainHandle->vk, &imageCount, swapChainImages.data());
 
         for (auto const& swapChainImage : swapChainImages) {
-            this->images.push_back(std::make_shared<Image>(swapChainImage, this->vkSwapChainHandle));
+            auto const swapChainImageHandle = std::make_shared<ImageHandle>(this->vkDeviceHandle, this->vkSwapChainHandle);
+            swapChainImageHandle->vk = swapChainImage;
+            this->images.push_back(std::make_shared<Image>(swapChainImageHandle, this->vkDeviceHandle));
         }
     }
 
 
-    std::shared_ptr<Image> SwapChain::getImage(uint32_t const index) {
-        if (index >= this->images.size()) {
-            throw std::runtime_error("Swap chain image index out of range.");
+    std::vector<std::shared_ptr<Image>> SwapChain::getImages() const {
+        return this->images;
+    }
+
+
+    std::vector<std::shared_ptr<ImageView>> SwapChain::getImageViews(ImageViewConfig const& config) {
+        if (config.imageFormat != this->config.surfaceFormat.format) {
+            WARN(log) << "Requested view format differs from swap chain surface format. This may cause wierdness!" << std::endl;
         }
 
-        return this->images[index];
+        std::vector<std::shared_ptr<ImageView>> views;
+
+        for (auto const& image : images) {
+            views.push_back(image->createImageView(config));
+        }
+
+        return views;
     }
 
 }
