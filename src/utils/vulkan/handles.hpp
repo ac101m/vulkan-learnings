@@ -48,8 +48,26 @@ namespace utils::vulkan {
             instanceHandle(instanceHandle) {}
 
         ~SurfaceHandle() {
-            vkDestroySurfaceKHR(instanceHandle->vk, this->vk, nullptr);
+            vkDestroySurfaceKHR(this->instanceHandle->vk, this->vk, nullptr);
         }
     };
 
+
+    /**
+     * @brief Class for managing lifetime of VkSwapChain objects.
+     */
+    struct SwapChainHandle {
+    private:
+        std::shared_ptr<DeviceHandle> const deviceHandle;
+
+    public:
+        VkSwapchainKHR_T * vk;
+
+        SwapChainHandle(std::shared_ptr<DeviceHandle> const& deviceHandle) :
+            deviceHandle(deviceHandle) {}
+
+        ~SwapChainHandle() {
+            vkDestroySwapchainKHR(this->deviceHandle->vk, this->vk, nullptr);
+        }
+    };
 }

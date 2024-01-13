@@ -2,6 +2,7 @@
 
 #include "utils/vulkan/helpers.hpp"
 #include "utils/vulkan/queue.hpp"
+#include "utils/vulkan/swap_chain.hpp"
 
 #include "utils/misc/logging.hpp"
 
@@ -48,6 +49,13 @@ namespace utils::vulkan {
          * @return std::shared_ptr to a Queue object.
          */
         std::shared_ptr<Queue> getQueue(std::string const& queueName);
+
+        /**
+         * @brief Create a new swap chain.
+         */
+        std::shared_ptr<SwapChain> createSwapChain(
+            std::shared_ptr<Surface> const& surface,
+            SwapChainConfig const& swapChainConfig) const;
     };
 
 }

@@ -101,4 +101,11 @@ namespace utils::vulkan {
         return this->queueMap[queueName];
     }
 
+
+    std::shared_ptr<SwapChain> Device::createSwapChain(
+        std::shared_ptr<Surface> const& surface,
+        SwapChainConfig const& swapChainConfig
+    ) const {
+        return std::make_shared<SwapChain>(this->vkDeviceHandle, surface->getHandle(), swapChainConfig);
+    }
 }

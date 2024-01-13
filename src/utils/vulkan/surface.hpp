@@ -20,6 +20,8 @@ namespace utils::vulkan {
     public:
         Surface(std::shared_ptr<InstanceHandle> const& instanceHandle, std::shared_ptr<utils::glfw::WindowHandle> const& windowHandle);
 
+        VkExtent2D getSurfaceExtent() const;
+
         std::shared_ptr<SurfaceHandle> getHandle() {
             return this->surfaceHandle;
         }

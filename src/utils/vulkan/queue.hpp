@@ -18,6 +18,7 @@ namespace utils::vulkan {
 
     public:
         std::string const name;
+        uint32_t const queueFamilyIndex;
 
     public:
         Queue(

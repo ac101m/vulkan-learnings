@@ -103,6 +103,21 @@ namespace utils::vulkan {
     }
 
 
+    bool PhysicalDevice::checkSwapChainRequirements(QueuePlan const& queuePlan) const {
+        for (auto const& entry : queuePlan.queues) {
+            auto const& queueConstraints = entry.second;
+
+            if (queueConstraints.presentSurface != nullptr) {
+                if (!getSwapChainSupportInfo(queueConstraints.presentSurface).isAdequate()) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+
     uint32_t PhysicalDevice::getScore(QueuePlan const& queuePlan, std::vector<std::string> const& requiredExtensions) const {
         uint32_t score = 0;
 
@@ -128,10 +143,13 @@ namespace utils::vulkan {
             }
         }
 
-        auto const properties = getProperties();
+        // Check swap chain requirements
+        if (!checkSwapChainRequirements(queuePlan)) {
+            return 0;
+        }
 
         // Strongly prefer discrete GPUs
-        if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
+        if (getProperties().deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
             score += 10000;
         }
 
@@ -161,4 +179,22 @@ namespace utils::vulkan {
         return std::make_shared<Device>(this->vkInstanceHandle, this->vkPhysicalDevice, queueFamilyIndexMap, deviceExtensions);
     }
 
+
+    SwapChainSupportInfo PhysicalDevice::getSwapChainSupportInfo(std::shared_ptr<Surface> const& surface) const {
+        uint32_t formatCount = 0;
+        uint32_t presentModeCount = 0;
+
+        vkGetPhysicalDeviceSurfaceFormatsKHR(this->vkPhysicalDevice, surface->getHandle()->vk, &formatCount, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(this->vkPhysicalDevice, surface->getHandle()->vk, &presentModeCount, nullptr);
+
+        VkSurfaceCapabilitiesKHR capabilities;
+        std::vector<VkSurfaceFormatKHR> surfaceFormats(formatCount);
+        std::vector<VkPresentModeKHR> presentModes(presentModeCount);
+
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(this->vkPhysicalDevice, surface->getHandle()->vk, &capabilities);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(this->vkPhysicalDevice, surface->getHandle()->vk, &formatCount, surfaceFormats.data());
+        vkGetPhysicalDeviceSurfacePresentModesKHR(this->vkPhysicalDevice, surface->getHandle()->vk, &presentModeCount, presentModes.data());
+
+        return SwapChainSupportInfo(capabilities, surfaceFormats, presentModes);
+    }
 }

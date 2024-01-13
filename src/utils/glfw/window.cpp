@@ -23,6 +23,19 @@ namespace utils::glfw {
     }
 
 
+    VkExtent2D Window::getFrameBufferSize() const {
+        int width;
+        int height;
+
+        glfwGetFramebufferSize(this->windowHandle->glfw, &width, &height);
+
+        return {
+            static_cast<uint32_t>(width),
+            static_cast<uint32_t>(height)
+        };
+    }
+
+
     bool Window::shouldClose() {
         return glfwWindowShouldClose(this->windowHandle->glfw);
     }

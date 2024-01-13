@@ -8,6 +8,7 @@
 #include <vector>
 #include <optional>
 #include <memory>
+#include <algorithm>
 
 
 namespace utils::vulkan {
@@ -20,6 +21,28 @@ namespace utils::vulkan {
     };
 
 
+    struct SwapChainSupportInfo {
+        VkSurfaceCapabilitiesKHR const capabilities;
+        std::vector<VkSurfaceFormatKHR> const supportedSurfaceFormats;
+        std::vector<VkPresentModeKHR> const supportedPresentModes;
+
+        SwapChainSupportInfo(
+            VkSurfaceCapabilitiesKHR const& capabilities,
+            std::vector<VkSurfaceFormatKHR> const& supportedSurfaceFormats,
+            std::vector<VkPresentModeKHR> const& supportedPresentModes
+        ) :
+            capabilities(capabilities),
+            supportedSurfaceFormats(supportedSurfaceFormats),
+            supportedPresentModes(supportedPresentModes)
+        {}
+
+        bool isAdequate() const {
+            return !this->supportedSurfaceFormats.empty() &&
+                   !this->supportedPresentModes.empty();
+        }
+    };
+
+
     class PhysicalDevice {
     private:
         static utils::Logger log;
@@ -27,6 +50,9 @@ namespace utils::vulkan {
         std::shared_ptr<InstanceHandle> vkInstanceHandle;
 
         VkPhysicalDevice vkPhysicalDevice;
+
+    private:
+        bool checkSwapChainRequirements(QueuePlan const& queuePlan) const;
 
     public:
         PhysicalDevice(std::shared_ptr<InstanceHandle> const& vkInstanceHandle, VkPhysicalDevice const& vkPhysicalDevice);
@@ -70,6 +96,12 @@ namespace utils::vulkan {
         std::shared_ptr<utils::vulkan::Device> createLogicalDevice(
             QueuePlan const& queuePlan,
             std::vector<std::string> const& deviceExtensions) const;
+
+        /**
+         * @brief Get information about swap chain support.
+         * @return SwapChainSupportInfo object.
+         */
+        SwapChainSupportInfo getSwapChainSupportInfo(std::shared_ptr<Surface> const& surface) const;
     };
 
 }
