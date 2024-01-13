@@ -3,6 +3,8 @@
 
 namespace utils::vulkan {
 
+    utils::Logger SwapChain::log("SwapChain");
+
 
     void SwapChainPreferences::addSurfaceFormat(VkSurfaceFormatKHR const surfaceFormat) {
         surfaceFormats.push_back(surfaceFormat);
@@ -50,6 +52,8 @@ namespace utils::vulkan {
         vkSurfaceHandle(vkSurfaceHandle),
         config(config)
     {
+        INFO(log) << "Creating swap chain." << std::endl;
+
         VkSwapchainCreateInfoKHR createInfo {};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         createInfo.surface = vkSurfaceHandle->vk;
