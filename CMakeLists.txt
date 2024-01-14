@@ -9,9 +9,13 @@ project(
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
+find_package(Vulkan REQUIRED COMPONENTS glslc)
+find_program(glslc_executable NAMES glslc HINTS Vulkan::glslc)
+
 set(UTILS_SOURCE_SET
     src/utils/misc/logging.cpp
     src/utils/misc/string.cpp
+    src/utils/misc/file.cpp
     src/utils/glfw/window.cpp
     src/utils/vulkan/instance.cpp
     src/utils/vulkan/debug.cpp
@@ -22,19 +26,41 @@ set(UTILS_SOURCE_SET
     src/utils/vulkan/surface.cpp
     src/utils/vulkan/swap_chain.cpp
     src/utils/vulkan/image.cpp
-    src/utils/vulkan/image_view.cpp)
+    src/utils/vulkan/image_view.cpp
+    src/utils/vulkan/shader_module.cpp)
 
 set(MAIN_SOURCE_SET
     ${UTILS_SOURCE_SET}
     src/main.cpp)
 
-set(TEST_SOURCE_SET
-    test/testmain.cpp)
+set(SHADER_SOURCE_SET
+    data/shaders/triangle/fragment.frag
+    data/shaders/triangle/vertex.vert)
+
+foreach(GLSL ${SHADER_SOURCE_SET})
+    get_filename_component(GLSL_DIR ${GLSL} DIRECTORY)
+    get_filename_component(GLSL_FILENAME ${GLSL} NAME_WLE)
+    set(SPIRV ${PROJECT_BINARY_DIR}/${GLSL_DIR}/${GLSL_FILENAME}.spv)
+    get_filename_component(SPIRV_DIR ${SPIRV} DIRECTORY)
+    add_custom_command(
+        OUTPUT ${SPIRV}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${SPIRV_DIR}
+        COMMAND ${glslc_executable} "${GLSL}" -o ${SPIRV}
+        DEPENDS ${GLSL})
+    list(APPEND SPIRV_FILES ${SPIRV})
+endforeach(GLSL)
 
 add_executable(main ${MAIN_SOURCE_SET})
 target_include_directories(main PRIVATE src)
 target_link_libraries(main -lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi)
 set_property(TARGET main PROPERTY CXX_STANDARD 17)
+
+add_custom_target(shaders DEPENDS ${SPIRV_FILES})
+add_dependencies(main shaders)
+
+set(TEST_SOURCE_SET
+    test/testmain.cpp)
 
 add_executable(test ${TEST_SOURCE_SET})
 target_include_directories(test PRIVATE src)

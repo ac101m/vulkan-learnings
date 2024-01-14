@@ -113,4 +113,23 @@ namespace utils::vulkan {
             vkDestroyImageView(this->deviceHandle->vk, this->vk, nullptr);
         }
     };
+
+
+    /**
+     * @brief Class for managing lifetime of VkShaderModule objects.
+     */
+    class ShaderModuleHandle {
+    private:
+        std::shared_ptr<DeviceHandle> const vkDeviceHandle;
+
+    public:
+        VkShaderModule_T * vk;
+
+        ShaderModuleHandle(std::shared_ptr<DeviceHandle> const& vkDeviceHandle) :
+            vkDeviceHandle(vkDeviceHandle) {}
+
+        ~ShaderModuleHandle() {
+            vkDestroyShaderModule(this->vkDeviceHandle->vk, this->vk, nullptr);
+        }
+    };
 }

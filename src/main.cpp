@@ -4,6 +4,7 @@
 #include "utils/vulkan/device.hpp"
 #include "utils/vulkan/swap_chain.hpp"
 #include "utils/misc/logging.hpp"
+#include "utils/misc/file.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
@@ -144,6 +145,17 @@ private:
     }
 
 
+    // TODO figure out how this should be organized
+    void createGraphicsPipeline() {
+        if (this->vkDevice == nullptr) {
+            throw std::runtime_error("Cannot create graphics pipeline, logical device is not yet initialized.");
+        }
+
+        auto const vertexShader = this->vkDevice->createShaderModule("data/shaders/triangle/vertex.spv");
+        auto const fragmentShader = this->vkDevice->createShaderModule("data/shaders/triangle/fragment.spv");
+    }
+
+
 public:
     Application(uint32_t const windowWidth, uint32_t const windowHeight, bool doDebug) {
         auto const validationLayers = doDebug ? debugValidationLayers : std::vector<std::string>(0);
@@ -171,9 +183,9 @@ public:
         swapChainImageViewConfig.imageFormat = this->vkSwapChain->config.surfaceFormat.format;
         swapChainImageViewConfig.viewType = VK_IMAGE_VIEW_TYPE_2D;
 
-        for (auto const& image : this->vkSwapChain->getImages()) {
-            vkSwapChainImageViews.push_back(image->createImageView(swapChainImageViewConfig));
-        }
+        this->vkSwapChainImageViews = this->vkSwapChain->getImageViews(swapChainImageViewConfig);
+
+        createGraphicsPipeline();
     }
 
 

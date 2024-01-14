@@ -108,4 +108,9 @@ namespace utils::vulkan {
     ) const {
         return std::make_shared<SwapChain>(this->vkDeviceHandle, surface->getHandle(), swapChainConfig);
     }
+
+
+    std::shared_ptr<ShaderModule> Device::createShaderModule(std::string const& path) const {
+        return std::make_shared<ShaderModule>(this->vkDeviceHandle, path);
+    }
 }

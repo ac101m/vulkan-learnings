@@ -3,6 +3,7 @@
 #include "utils/vulkan/helpers.hpp"
 #include "utils/vulkan/queue.hpp"
 #include "utils/vulkan/swap_chain.hpp"
+#include "utils/vulkan/shader_module.hpp"
 
 #include "utils/misc/logging.hpp"
 
@@ -52,10 +53,19 @@ namespace utils::vulkan {
 
         /**
          * @brief Create a new swap chain.
+         * @param surface Swap surface for the new swap chain.
+         * @param swapChainConfig SwapChainConfig struct containing swap chain settings.
          */
         std::shared_ptr<SwapChain> createSwapChain(
             std::shared_ptr<Surface> const& surface,
             SwapChainConfig const& swapChainConfig) const;
+
+        /**
+         * @brief Create a new shader module from an spv file on disk.
+         * @param path Path to the source SPIRV file to create the shader from.
+         * @return Shared pointer to shader module object.
+         */
+        std::shared_ptr<ShaderModule> createShaderModule(std::string const& path) const;
     };
 
 }
