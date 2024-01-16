@@ -14,11 +14,10 @@ namespace utils::vulkan {
     };
 
 
-    class ImageView {
+    class ImageView : public HandleWrapper<ImageViewHandle> {
     private:
         static utils::Logger log;
 
-        std::shared_ptr<ImageViewHandle> const vkImageViewHandle;
         std::shared_ptr<DeviceHandle> const vkDeviceHandle;
         std::shared_ptr<ImageHandle> const vkImageHandle;
 

@@ -221,4 +221,23 @@ namespace utils::vulkan {
             vkDestroyPipeline(this->vkDeviceHandle->vk, this->vk, nullptr);
         }
     };
+
+
+    /**
+     * @brief Class for managing lifetime of VkFrameBuffer objects.
+     */
+    class FrameBufferHandle {
+    private:
+        std::shared_ptr<DeviceHandle> const vkDeviceHandle;
+
+    public:
+        VkFramebuffer_T * vk;
+
+        FrameBufferHandle(std::shared_ptr<DeviceHandle> const& vkDeviceHandle) :
+            vkDeviceHandle(vkDeviceHandle) {}
+
+        ~FrameBufferHandle() {
+            vkDestroyFramebuffer(this->vkDeviceHandle->vk, this->vk, nullptr);
+        }
+    };
 }

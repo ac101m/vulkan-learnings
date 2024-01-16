@@ -133,4 +133,12 @@ namespace utils::vulkan {
         return std::make_shared<GraphicsPipeline>(
             this->vkDeviceHandle, pipelineLayout->getHandle(), renderPass->getHandle(), config);
     }
+
+
+    std::shared_ptr<FrameBuffer> Device::createFrameBuffer(
+        std::shared_ptr<RenderPass> const& renderPass,
+        FrameBufferConfig const& config
+    ) const {
+        return std::make_shared<FrameBuffer>(this->vkDeviceHandle, renderPass->getHandle(), config);
+    }
 }

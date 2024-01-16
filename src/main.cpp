@@ -34,6 +34,7 @@ private:
 
     std::shared_ptr<utils::vulkan::SwapChain> vkSwapChain;
     std::vector<std::shared_ptr<utils::vulkan::ImageView>> vkSwapChainImageViews;
+    std::vector<std::shared_ptr<utils::vulkan::FrameBuffer>> vkFrameBuffers;
 
     std::shared_ptr<utils::vulkan::ShaderModule> vkVertexShaderModule;
     std::shared_ptr<utils::vulkan::ShaderModule> vkFragmentShaderModule;
@@ -150,20 +151,6 @@ private:
     }
 
 
-    // TODO figure out how this should be organized!
-    void createGraphicsPipeline() {
-        if (this->vkDevice == nullptr) {
-            throw std::runtime_error("Cannot create graphics pipeline, logical device is not yet initialized.");
-        }
-
-        if (this->vkSwapChain == nullptr) {
-            throw std::runtime_error("Cannot create graphics pipeline, swap chain is not yet initialized.");
-        }
-
-
-    }
-
-
     utils::vulkan::ImageViewConfig createSwapChainImageViewConfig() {
         utils::vulkan::ImageViewConfig config;
 
@@ -223,9 +210,7 @@ public:
         this->vkGraphicsQueue = this->vkDevice->getQueue(graphicsQueueName);
         this->vkPresentQueue = this->vkDevice->getQueue(presentQueueName);
 
-        auto const swapChainConfig  = buildSwapChainConfig();
-
-        this->vkSwapChain = this->vkDevice->createSwapChain(this->vkPresentSurface, swapChainConfig);
+        this->vkSwapChain = this->vkDevice->createSwapChain(this->vkPresentSurface, buildSwapChainConfig());
         this->vkSwapChainImageViews = this->vkSwapChain->createImageViews(createSwapChainImageViewConfig());
 
         this->vkVertexShaderModule = this->vkDevice->createShaderModule("data/shaders/triangle/vertex.spv");
@@ -237,15 +222,25 @@ public:
             this->vkPipelineLayout,
             this->vkRenderPass,
             createGraphicsPipelineConfig());
+
+        for (unsigned i = 0; i < this->vkSwapChainImageViews.size(); i++) {
+            utils::vulkan::FrameBufferConfig config(this->vkSwapChain->config.imageExtent);
+            config.addAttachment(this->vkSwapChainImageViews[i]->getHandle());
+            this->vkFrameBuffers.push_back(this->vkDevice->createFrameBuffer(this->vkRenderPass, config));
+        }
     }
 
 
     void run() {
         INFO(log) << "Main loop starting." << std::endl;
 
+        unsigned i = 0;
         while (!glfwWindow->shouldClose()) {
+            INFO(log) << "Frame: " << i++ << '\r';
             glfwPollEvents();
         }
+
+        std::cout << std::endl;
 
         INFO(log) << "Main loop stopped." << std::endl;
     }

@@ -7,6 +7,7 @@
 #include "utils/vulkan/pipeline_layout.hpp"
 #include "utils/vulkan/render_pass.hpp"
 #include "utils/vulkan/graphics_pipeline.hpp"
+#include "utils/vulkan/frame_buffer.hpp"
 
 #include "utils/misc/logging.hpp"
 
@@ -88,12 +89,23 @@ namespace utils::vulkan {
         /**
          * @brief Create a new graphics pipeline.
          * @param config Graphics pipeline config object containing pipeline details.
+         * @param pipelineLayout Shared pointer to valid pipeline layout object.
+         * @param renderPass Shared pointer to valid render pass object.
          * @return Shared pointer to new graphics pipeline object.
          */
         std::shared_ptr<GraphicsPipeline> createGraphicsPipeline(
             std::shared_ptr<PipelineLayout> const& pipelineLayout,
             std::shared_ptr<RenderPass> const& renderPass,
             GraphicsPipelineConfig const& config) const;
+
+        /**
+         * @brief Create a frame buffer from an image view.
+         * @param imageView Shared pointer to image view to create frame buffer from.
+         * @return Shared pointer to new frame buffer object.
+         */
+        std::shared_ptr<FrameBuffer> createFrameBuffer(
+            std::shared_ptr<RenderPass> const& renderPass,
+            FrameBufferConfig const& config) const;
 
         /**
          * @brief Return a reference to the device handle.

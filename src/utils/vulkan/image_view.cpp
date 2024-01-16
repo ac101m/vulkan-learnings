@@ -11,7 +11,7 @@ namespace utils::vulkan {
         std::shared_ptr<ImageHandle> const& vkImageHandle,
         ImageViewConfig const& config
     ) :
-        vkImageViewHandle(std::make_shared<ImageViewHandle>(vkDeviceHandle)),
+        HandleWrapper<ImageViewHandle>(std::make_shared<ImageViewHandle>(vkDeviceHandle)),
         vkDeviceHandle(vkDeviceHandle),
         vkImageHandle(vkImageHandle),
         config(config)
@@ -33,7 +33,7 @@ namespace utils::vulkan {
         createInfo.subresourceRange.baseArrayLayer = 0;
         createInfo.subresourceRange.layerCount = 1;
 
-        if (vkCreateImageView(this->vkDeviceHandle->vk, &createInfo, nullptr, &this->vkImageViewHandle->vk) != VK_SUCCESS) {
+        if (vkCreateImageView(this->vkDeviceHandle->vk, &createInfo, nullptr, &this->vkHandle->vk) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create image view.");
         }
     }
