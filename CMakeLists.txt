@@ -12,11 +12,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 find_package(Vulkan REQUIRED COMPONENTS glslc)
 find_program(glslc_executable NAMES glslc HINTS Vulkan::glslc)
 
-set(UTILS_SOURCE_SET
-    src/utils/misc/logging.cpp
-    src/utils/misc/string.cpp
-    src/utils/misc/file.cpp
-    src/utils/glfw/window.cpp
+set(UTILS_VULKAN_SOURCE_SET
     src/utils/vulkan/instance.cpp
     src/utils/vulkan/debug.cpp
     src/utils/vulkan/physical_device.cpp
@@ -27,10 +23,23 @@ set(UTILS_SOURCE_SET
     src/utils/vulkan/swap_chain.cpp
     src/utils/vulkan/image.cpp
     src/utils/vulkan/image_view.cpp
-    src/utils/vulkan/shader_module.cpp)
+    src/utils/vulkan/shader_module.cpp
+    src/utils/vulkan/pipeline_layout.cpp
+    src/utils/vulkan/render_pass.cpp
+    src/utils/vulkan/graphics_pipeline.cpp)
+
+set(UTILS_MISC_SOURCE_SET
+    src/utils/misc/logging.cpp
+    src/utils/misc/string.cpp
+    src/utils/misc/file.cpp)
+
+set(UTILS_GLFW_SOURCE_SET
+    src/utils/glfw/window.cpp)
 
 set(MAIN_SOURCE_SET
-    ${UTILS_SOURCE_SET}
+    ${UTILS_VULKAN_SOURCE_SET}
+    ${UTILS_MISC_SOURCE_SET}
+    ${UTILS_GLFW_SOURCE_SET}
     src/main.cpp)
 
 set(SHADER_SOURCE_SET

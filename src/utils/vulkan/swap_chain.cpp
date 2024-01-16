@@ -110,7 +110,7 @@ namespace utils::vulkan {
     }
 
 
-    std::vector<std::shared_ptr<ImageView>> SwapChain::getImageViews(ImageViewConfig const& config) {
+    std::vector<std::shared_ptr<ImageView>> SwapChain::createImageViews(ImageViewConfig const& config) {
         if (config.imageFormat != this->config.surfaceFormat.format) {
             WARN(log) << "Requested view format differs from swap chain surface format. This may cause wierdness!" << std::endl;
         }

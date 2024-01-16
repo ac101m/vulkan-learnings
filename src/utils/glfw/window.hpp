@@ -42,7 +42,7 @@ namespace utils::glfw {
 
         /**
          * @brief Return a reference counted copy of the window handle.
-         * @return Shared pointer of glfw window handle.
+         * @return Shared pointer to glfw window handle instance.
          */
         std::shared_ptr<WindowHandle> getHandle() {
             return this->windowHandle;

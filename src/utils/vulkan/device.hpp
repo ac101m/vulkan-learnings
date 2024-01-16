@@ -4,6 +4,9 @@
 #include "utils/vulkan/queue.hpp"
 #include "utils/vulkan/swap_chain.hpp"
 #include "utils/vulkan/shader_module.hpp"
+#include "utils/vulkan/pipeline_layout.hpp"
+#include "utils/vulkan/render_pass.hpp"
+#include "utils/vulkan/graphics_pipeline.hpp"
 
 #include "utils/misc/logging.hpp"
 
@@ -12,6 +15,7 @@
 #include <vector>
 #include <optional>
 #include <memory>
+#include <filesystem>
 
 
 namespace utils::vulkan {
@@ -65,7 +69,39 @@ namespace utils::vulkan {
          * @param path Path to the source SPIRV file to create the shader from.
          * @return Shared pointer to shader module object.
          */
-        std::shared_ptr<ShaderModule> createShaderModule(std::string const& path) const;
+        std::shared_ptr<ShaderModule> createShaderModule(std::filesystem::path const& path) const;
+
+        /**
+         * @brief Create a new pipeline layout with the provided configuration.
+         * @param config Pipeline layout config object.
+         * @return Shared pointer to new pipeline layout object.
+         */
+        std::shared_ptr<PipelineLayout> createPipelineLayout(PipelineLayoutConfig const& config) const;
+
+        /**
+         * @brief Create a new render pass.
+         * @param config Render pass config object containing details of the render pass.
+         * @return Shared pointer to new render pass object.
+         */
+        std::shared_ptr<RenderPass> createRenderPass(RenderPassConfig const& config) const;
+
+        /**
+         * @brief Create a new graphics pipeline.
+         * @param config Graphics pipeline config object containing pipeline details.
+         * @return Shared pointer to new graphics pipeline object.
+         */
+        std::shared_ptr<GraphicsPipeline> createGraphicsPipeline(
+            std::shared_ptr<PipelineLayout> const& pipelineLayout,
+            std::shared_ptr<RenderPass> const& renderPass,
+            GraphicsPipelineConfig const& config) const;
+
+        /**
+         * @brief Return a reference to the device handle.
+         * @return Shared pointer to device handle instance.
+         */
+        std::shared_ptr<DeviceHandle> getHandle() {
+            return this->vkDeviceHandle;
+        }
     };
 
 }

@@ -22,6 +22,10 @@ namespace utils::vulkan {
 
         VkExtent2D getSurfaceExtent() const;
 
+        /**
+         * @brief Return a reference to the surface handle.
+         * @return Shared pointer to surface handle instance.
+         */
         std::shared_ptr<SurfaceHandle> getHandle() {
             return this->surfaceHandle;
         }

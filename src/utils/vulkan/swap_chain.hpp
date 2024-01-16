@@ -84,7 +84,7 @@ namespace utils::vulkan {
             SwapChainConfig const& config);
 
         /**
-         * @brief Access swap chain images individually.
+         * @brief Access swap chain images.
          * @return Vector containing shared pointers to swap chain images.
          */
         std::vector<std::shared_ptr<Image>> getImages() const;
@@ -94,7 +94,7 @@ namespace utils::vulkan {
          * @param config ImageViewConfig containing image view configuration info.
          * @return Vector containing shared pointers to image views.
          */
-        std::vector<std::shared_ptr<ImageView>> getImageViews(ImageViewConfig const& config);
+        std::vector<std::shared_ptr<ImageView>> createImageViews(ImageViewConfig const& config);
     };
 
 }

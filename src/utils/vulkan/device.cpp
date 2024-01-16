@@ -110,7 +110,27 @@ namespace utils::vulkan {
     }
 
 
-    std::shared_ptr<ShaderModule> Device::createShaderModule(std::string const& path) const {
+    std::shared_ptr<ShaderModule> Device::createShaderModule(std::filesystem::path const& path) const {
         return std::make_shared<ShaderModule>(this->vkDeviceHandle, path);
+    }
+
+
+    std::shared_ptr<PipelineLayout> Device::createPipelineLayout(PipelineLayoutConfig const& config) const {
+        return std::make_shared<PipelineLayout>(this->vkDeviceHandle, config);
+    }
+
+
+    std::shared_ptr<RenderPass> Device::createRenderPass(RenderPassConfig const& config) const {
+        return std::make_shared<RenderPass>(this->vkDeviceHandle, config);
+    }
+
+
+    std::shared_ptr<GraphicsPipeline> Device::createGraphicsPipeline(
+        std::shared_ptr<PipelineLayout> const& pipelineLayout,
+        std::shared_ptr<RenderPass> const& renderPass,
+        GraphicsPipelineConfig const& config
+    ) const {
+        return std::make_shared<GraphicsPipeline>(
+            this->vkDeviceHandle, pipelineLayout->getHandle(), renderPass->getHandle(), config);
     }
 }

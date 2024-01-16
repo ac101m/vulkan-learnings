@@ -3,6 +3,7 @@
 #include "utils/vulkan/instance.hpp"
 #include "utils/vulkan/device.hpp"
 #include "utils/vulkan/swap_chain.hpp"
+#include "utils/vulkan/render_pass.hpp"
 #include "utils/misc/logging.hpp"
 #include "utils/misc/file.hpp"
 
@@ -33,6 +34,12 @@ private:
 
     std::shared_ptr<utils::vulkan::SwapChain> vkSwapChain;
     std::vector<std::shared_ptr<utils::vulkan::ImageView>> vkSwapChainImageViews;
+
+    std::shared_ptr<utils::vulkan::ShaderModule> vkVertexShaderModule;
+    std::shared_ptr<utils::vulkan::ShaderModule> vkFragmentShaderModule;
+    std::shared_ptr<utils::vulkan::PipelineLayout> vkPipelineLayout;
+    std::shared_ptr<utils::vulkan::RenderPass> vkRenderPass;
+    std::shared_ptr<utils::vulkan::GraphicsPipeline> vkGraphicsPipeline;
 
     std::vector<std::string> const debugValidationLayers = {
         "VK_LAYER_KHRONOS_validation"
@@ -74,7 +81,7 @@ private:
 
 
     /**
-     * @brief Calculate a suitable swap chain image cound.
+     * @brief Calculate a suitable swap chain image count.
      * We want one more image that the minimum supported by the swap chain,
      * but we don't want to exceed the safe upper limit.
      */
@@ -107,8 +114,6 @@ private:
 
             return actualExtent;
         }
-
-        return {0, 0};
     }
 
 
@@ -145,14 +150,57 @@ private:
     }
 
 
-    // TODO figure out how this should be organized
+    // TODO figure out how this should be organized!
     void createGraphicsPipeline() {
         if (this->vkDevice == nullptr) {
             throw std::runtime_error("Cannot create graphics pipeline, logical device is not yet initialized.");
         }
 
-        auto const vertexShader = this->vkDevice->createShaderModule("data/shaders/triangle/vertex.spv");
-        auto const fragmentShader = this->vkDevice->createShaderModule("data/shaders/triangle/fragment.spv");
+        if (this->vkSwapChain == nullptr) {
+            throw std::runtime_error("Cannot create graphics pipeline, swap chain is not yet initialized.");
+        }
+
+
+    }
+
+
+    utils::vulkan::ImageViewConfig createSwapChainImageViewConfig() {
+        utils::vulkan::ImageViewConfig config;
+
+        config.imageFormat = this->vkSwapChain->config.surfaceFormat.format;
+        config.viewType = VK_IMAGE_VIEW_TYPE_2D;
+
+        return config;
+    }
+
+
+    utils::vulkan::RenderPassConfig createRenderPassConfig() {
+        utils::vulkan::RenderPassConfig config;
+
+        utils::vulkan::AttachmentDescription output;
+        output.format = this->vkSwapChain->config.surfaceFormat.format;
+        output.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        output.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        output.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+        uint32_t outputIndex = config.addAttachment(output);
+
+        utils::vulkan::SubPassDescription subPass(VK_PIPELINE_BIND_POINT_GRAPHICS);
+        subPass.addColorAttachment(outputIndex, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+        config.addSubPass(subPass);
+
+        return config;
+    }
+
+
+    utils::vulkan::GraphicsPipelineConfig createGraphicsPipelineConfig() {
+        auto config = utils::vulkan::GraphicsPipelineConfig();
+
+        config.addShaderStage(this->vkVertexShaderModule->getHandle(), VK_SHADER_STAGE_VERTEX_BIT);
+        config.addShaderStage(this->vkFragmentShaderModule->getHandle(), VK_SHADER_STAGE_FRAGMENT_BIT);
+
+        return config;
     }
 
 
@@ -178,14 +226,17 @@ public:
         auto const swapChainConfig  = buildSwapChainConfig();
 
         this->vkSwapChain = this->vkDevice->createSwapChain(this->vkPresentSurface, swapChainConfig);
+        this->vkSwapChainImageViews = this->vkSwapChain->createImageViews(createSwapChainImageViewConfig());
 
-        utils::vulkan::ImageViewConfig swapChainImageViewConfig;
-        swapChainImageViewConfig.imageFormat = this->vkSwapChain->config.surfaceFormat.format;
-        swapChainImageViewConfig.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        this->vkVertexShaderModule = this->vkDevice->createShaderModule("data/shaders/triangle/vertex.spv");
+        this->vkFragmentShaderModule = this->vkDevice->createShaderModule("data/shaders/triangle/fragment.spv");
+        this->vkPipelineLayout = this->vkDevice->createPipelineLayout({});
+        this->vkRenderPass = this->vkDevice->createRenderPass(createRenderPassConfig());
 
-        this->vkSwapChainImageViews = this->vkSwapChain->getImageViews(swapChainImageViewConfig);
-
-        createGraphicsPipeline();
+        this->vkGraphicsPipeline = this->vkDevice->createGraphicsPipeline(
+            this->vkPipelineLayout,
+            this->vkRenderPass,
+            createGraphicsPipelineConfig());
     }
 
 
