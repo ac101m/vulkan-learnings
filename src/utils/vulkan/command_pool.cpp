@@ -28,7 +28,8 @@ namespace utils::vulkan {
     }
 
 
-    std::shared_ptr<CommandBuffer> CommandPool::createCommandBuffer(CommandBufferConfig const& config) const {
-        return std::make_shared<CommandBuffer>(this->vkDeviceHandle, this->vkHandle, config);
+    std::shared_ptr<CommandBuffer> CommandPool::allocateCommandBuffer(VkCommandBufferLevel const flags) const {
+        return std::make_shared<CommandBuffer>(this->vkDeviceHandle, this->vkHandle, flags);
     }
+
 }

@@ -31,7 +31,7 @@ namespace utils::vulkan {
          * @param config Command buffer config object.
          * @return Shared pointer to command buffer object.
          */
-        std::shared_ptr<CommandBuffer> createCommandBuffer(CommandBufferConfig const& config) const;
+        std::shared_ptr<CommandBuffer> allocateCommandBuffer(CommandBufferConfig const& config) const;
     };
 
 }

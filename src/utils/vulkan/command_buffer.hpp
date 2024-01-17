@@ -6,11 +6,6 @@
 
 namespace utils::vulkan {
 
-    struct CommandBufferConfig {
-        VkCommandBufferLevel bufferLevel = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    };
-
-
     class CommandBuffer {
     private:
         static utils::Logger log;
@@ -24,7 +19,13 @@ namespace utils::vulkan {
         CommandBuffer(
             std::shared_ptr<DeviceHandle> const& vkDeviceHandle,
             std::shared_ptr<CommandPoolHandle> const& vkCommandPoolHandle,
-            CommandBufferConfig const& config);
+            VkCommandBufferUsageFlagBits const bufferLevel);
+
+        /**
+         * @brief Begin writing to the command buffer.
+         * @param flags Command buffer usage flags (defaults to none).
+         */
+        void beginCommandBuffer(VkCommandBufferUsageFlagBits const flags = static_cast<VkCommandBufferUsageFlagBits>(0));
     };
 
 }
