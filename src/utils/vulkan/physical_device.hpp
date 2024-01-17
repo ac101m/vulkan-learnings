@@ -47,7 +47,7 @@ namespace utils::vulkan {
     private:
         static utils::Logger log;
 
-        std::shared_ptr<InstanceHandle> vkInstanceHandle;
+        std::shared_ptr<InstanceHandle> const vkInstanceHandle;
 
         VkPhysicalDevice vkPhysicalDevice;
 

@@ -8,6 +8,7 @@
 #include "utils/vulkan/render_pass.hpp"
 #include "utils/vulkan/graphics_pipeline.hpp"
 #include "utils/vulkan/frame_buffer.hpp"
+#include "utils/vulkan/command_pool.hpp"
 
 #include "utils/misc/logging.hpp"
 
@@ -99,7 +100,7 @@ namespace utils::vulkan {
             GraphicsPipelineConfig const& config) const;
 
         /**
-         * @brief Create a frame buffer from an image view.
+         * @brief Create a new frame buffer from an image view.
          * @param imageView Shared pointer to image view to create frame buffer from.
          * @return Shared pointer to new frame buffer object.
          */
@@ -108,12 +109,19 @@ namespace utils::vulkan {
             FrameBufferConfig const& config) const;
 
         /**
+         * @brief Create a new command buffer object.
+         * @return Shared pointer to new command pool object.
+         */
+        std::shared_ptr<CommandPool> createCommandPool(CommandPoolConfig const& config) const;
+
+        /**
          * @brief Return a reference to the device handle.
          * @return Shared pointer to device handle instance.
          */
         std::shared_ptr<DeviceHandle> getHandle() {
             return this->vkDeviceHandle;
         }
+
     };
 
 }

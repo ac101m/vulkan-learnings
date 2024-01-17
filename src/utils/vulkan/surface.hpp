@@ -13,9 +13,9 @@ namespace utils::vulkan {
     private:
         static utils::Logger log;
 
-        std::shared_ptr<SurfaceHandle> surfaceHandle;
-        std::shared_ptr<InstanceHandle> instanceHandle;
-        std::shared_ptr<utils::glfw::WindowHandle> windowHandle;
+        std::shared_ptr<SurfaceHandle> const surfaceHandle;
+        std::shared_ptr<InstanceHandle> const instanceHandle;
+        std::shared_ptr<utils::glfw::WindowHandle> const windowHandle;
 
     public:
         Surface(std::shared_ptr<InstanceHandle> const& instanceHandle, std::shared_ptr<utils::glfw::WindowHandle> const& windowHandle);

@@ -28,8 +28,8 @@ namespace utils::vulkan {
     private:
         static utils::Logger log;
 
-        std::shared_ptr<DeviceHandle> const& vkDeviceHandle;
-        std::shared_ptr<RenderPassHandle> const& vkRenderPassHandle;
+        std::shared_ptr<DeviceHandle> const vkDeviceHandle;
+        std::shared_ptr<RenderPassHandle> const vkRenderPassHandle;
 
         std::vector<std::shared_ptr<ImageViewHandle>> const vkAttachments;
 

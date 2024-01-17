@@ -42,6 +42,9 @@ private:
     std::shared_ptr<utils::vulkan::RenderPass> vkRenderPass;
     std::shared_ptr<utils::vulkan::GraphicsPipeline> vkGraphicsPipeline;
 
+    std::shared_ptr<utils::vulkan::CommandPool> vkCommandPool;
+    std::shared_ptr<utils::vulkan::CommandBuffer> vkCommandBuffer;
+
     std::vector<std::string> const debugValidationLayers = {
         "VK_LAYER_KHRONOS_validation"
     };
@@ -191,6 +194,20 @@ private:
     }
 
 
+    utils::vulkan::CommandPoolConfig createCommandPoolConfig() {
+        auto config = utils::vulkan::CommandPoolConfig(this->vkGraphicsQueue->queueFamilyIndex);
+        config.flagBits = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        return config;
+    }
+
+
+    utils::vulkan::CommandBufferConfig createCommandBufferConfig() {
+        utils::vulkan::CommandBufferConfig config;
+        config.bufferLevel = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        return config;
+    }
+
+
 public:
     Application(uint32_t const windowWidth, uint32_t const windowHeight, bool doDebug) {
         auto const validationLayers = doDebug ? debugValidationLayers : std::vector<std::string>(0);
@@ -228,6 +245,9 @@ public:
             config.addAttachment(this->vkSwapChainImageViews[i]->getHandle());
             this->vkFrameBuffers.push_back(this->vkDevice->createFrameBuffer(this->vkRenderPass, config));
         }
+
+        this->vkCommandPool = this->vkDevice->createCommandPool(createCommandPoolConfig());
+        this->vkCommandBuffer = this->vkCommandPool->createCommandBuffer(createCommandBufferConfig());
     }
 
 

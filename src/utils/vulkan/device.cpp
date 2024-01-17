@@ -141,4 +141,9 @@ namespace utils::vulkan {
     ) const {
         return std::make_shared<FrameBuffer>(this->vkDeviceHandle, renderPass->getHandle(), config);
     }
+
+
+    std::shared_ptr<CommandPool> Device::createCommandPool(CommandPoolConfig const& config) const {
+        return std::make_shared<CommandPool>(this->vkDeviceHandle, config);
+    }
 }

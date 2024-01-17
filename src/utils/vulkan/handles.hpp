@@ -240,4 +240,23 @@ namespace utils::vulkan {
             vkDestroyFramebuffer(this->vkDeviceHandle->vk, this->vk, nullptr);
         }
     };
+
+
+    /**
+     * @brief Class for managing lifetime of VkCommandBuffer objects.
+     */
+    class CommandPoolHandle {
+    private:
+        std::shared_ptr<DeviceHandle> const vkDeviceHandle;
+
+    public:
+        VkCommandPool_T * vk;
+
+        CommandPoolHandle(std::shared_ptr<DeviceHandle> const& vkDeviceHandle) :
+            vkDeviceHandle(vkDeviceHandle) {}
+
+        ~CommandPoolHandle() {
+            vkDestroyCommandPool(this->vkDeviceHandle->vk, this->vk, nullptr);
+        }
+    };
 }
