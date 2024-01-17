@@ -9,7 +9,7 @@ namespace utils::vulkan {
     CommandBuffer::CommandBuffer(
         std::shared_ptr<DeviceHandle> const& vkDeviceHandle,
         std::shared_ptr<CommandPoolHandle> const& vkCommandPoolHandle,
-        VkCommandBufferUsageFlagBits const bufferLevel
+        VkCommandBufferLevel const bufferLevel
     ) : vkDeviceHandle(vkDeviceHandle), vkCommandPoolHandle(vkCommandPoolHandle) {
         INFO(log) << "Creating command buffer." << std::endl;
 

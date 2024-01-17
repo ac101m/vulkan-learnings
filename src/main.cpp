@@ -201,13 +201,6 @@ private:
     }
 
 
-    utils::vulkan::CommandBufferConfig createCommandBufferConfig() {
-        utils::vulkan::CommandBufferConfig config;
-        config.bufferLevel = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        return config;
-    }
-
-
 public:
     Application(uint32_t const windowWidth, uint32_t const windowHeight, bool doDebug) {
         auto const validationLayers = doDebug ? debugValidationLayers : std::vector<std::string>(0);
@@ -247,7 +240,7 @@ public:
         }
 
         this->vkCommandPool = this->vkDevice->createCommandPool(createCommandPoolConfig());
-        this->vkCommandBuffer = this->vkCommandPool->allocateCommandBuffer(createCommandBufferConfig());
+        this->vkCommandBuffer = this->vkCommandPool->allocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
     }
 
 
