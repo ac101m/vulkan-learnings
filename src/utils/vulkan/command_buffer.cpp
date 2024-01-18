@@ -25,7 +25,7 @@ namespace utils::vulkan {
     }
 
 
-    void CommandBuffer::beginCommandBuffer(VkCommandBufferUsageFlagBits const flags) {
+    void CommandBuffer::begin(VkCommandBufferUsageFlagBits const flags) {
         VkCommandBufferBeginInfo beginInfo {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = flags;

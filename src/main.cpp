@@ -241,6 +241,8 @@ public:
 
         this->vkCommandPool = this->vkDevice->createCommandPool(createCommandPoolConfig());
         this->vkCommandBuffer = this->vkCommandPool->allocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+        this->vkCommandBuffer->begin();
     }
 
 

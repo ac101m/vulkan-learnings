@@ -25,7 +25,7 @@ namespace utils::vulkan {
          * @brief Begin writing to the command buffer.
          * @param flags Command buffer usage flags (defaults to none).
          */
-        void beginCommandBuffer(VkCommandBufferUsageFlagBits const flags = static_cast<VkCommandBufferUsageFlagBits>(0));
+        void begin(VkCommandBufferUsageFlagBits const flags = static_cast<VkCommandBufferUsageFlagBits>(0));
     };
 
 }
