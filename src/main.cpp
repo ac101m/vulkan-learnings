@@ -41,9 +41,7 @@ private:
     std::shared_ptr<utils::vulkan::PipelineLayout> vkPipelineLayout;
     std::shared_ptr<utils::vulkan::RenderPass> vkRenderPass;
     std::shared_ptr<utils::vulkan::GraphicsPipeline> vkGraphicsPipeline;
-
     std::shared_ptr<utils::vulkan::CommandPool> vkCommandPool;
-    std::shared_ptr<utils::vulkan::CommandBuffer> vkCommandBuffer;
 
     std::vector<std::string> const debugValidationLayers = {
         "VK_LAYER_KHRONOS_validation"
@@ -55,6 +53,8 @@ private:
 
     std::string const graphicsQueueName = "GRAPHICS_QUEUE";
     std::string const presentQueueName = "PRESENT_QUEUE";
+
+    uint32_t const MAX_FRAMES_IN_FLIGHT = 2;
 
 
     utils::vulkan::QueuePlan createQueuePlan() const {
@@ -78,7 +78,8 @@ private:
         auto prefs = utils::vulkan::SwapChainPreferences();
 
         prefs.addSurfaceFormat({VK_FORMAT_B8G8R8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR});
-        prefs.addPresentMode(VK_PRESENT_MODE_FIFO_KHR);
+        //prefs.addPresentMode(VK_PRESENT_MODE_FIFO_KHR);
+        prefs.addPresentMode(VK_PRESENT_MODE_IMMEDIATE_KHR);
 
         return prefs;
     }
@@ -244,7 +245,6 @@ public:
         }
 
         this->vkCommandPool = this->vkDevice->createCommandPool(createCommandPoolConfig());
-        this->vkCommandBuffer = this->vkCommandPool->allocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
     }
 
 
@@ -252,59 +252,64 @@ public:
         INFO(log) << "Main loop starting." << std::endl;
 
         unsigned frame = 0;
+        unsigned contextIndex = 0;
 
-        std::vector<std::shared_ptr<utils::vulkan::Semaphore>> imageAvailableSemaphores(this->vkFrameBuffers.size());
-        std::vector<std::shared_ptr<utils::vulkan::Semaphore>> renderFinishedSemaphores(this->vkFrameBuffers.size());
+        std::vector<std::shared_ptr<utils::vulkan::CommandBuffer>> commandBuffers(MAX_FRAMES_IN_FLIGHT);
+        std::vector<std::shared_ptr<utils::vulkan::Semaphore>> imageAvailableSemaphores(MAX_FRAMES_IN_FLIGHT);
+        std::vector<std::shared_ptr<utils::vulkan::Semaphore>> renderCompleteSemaphores(MAX_FRAMES_IN_FLIGHT);
+        std::vector<std::shared_ptr<utils::vulkan::Fence>> inFlightFences(MAX_FRAMES_IN_FLIGHT);
 
-        for (unsigned i = 0; i < this->vkFrameBuffers.size(); i++) {
+        for (unsigned i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            commandBuffers[i] = this->vkCommandPool->allocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
             imageAvailableSemaphores[i] = this->vkDevice->createSemaphore();
-            renderFinishedSemaphores[i] = this->vkDevice->createSemaphore();
+            renderCompleteSemaphores[i] = this->vkDevice->createSemaphore();
+            inFlightFences[i] = this->vkDevice->createFence(VK_FENCE_CREATE_SIGNALED_BIT);
         }
-
-        std::shared_ptr<utils::vulkan::Fence> inFlightFence = this->vkDevice->createFence(VK_FENCE_CREATE_SIGNALED_BIT);
 
         while (!glfwWindow->shouldClose() && frame < 10000) {
             INFO(log) << "Frame: " << frame++ << '\n';
             glfwPollEvents();
 
+            auto const& commandBuffer = commandBuffers[contextIndex];
+            auto const& imageAvailableSemaphore = imageAvailableSemaphores[contextIndex];
+            auto const& renderCompleteSemaphore = renderCompleteSemaphores[contextIndex];
+            auto const& inFlightFence = inFlightFences[contextIndex];
+
+            contextIndex = (contextIndex + 1) % MAX_FRAMES_IN_FLIGHT;
+
             // Wait for the previous frame to be done
             inFlightFence->wait();
             inFlightFence->reset();
-
-            uint32_t index = frame % this->vkFrameBuffers.size();
-
-            auto const& imageAvailableSemaphore = imageAvailableSemaphores[index];
-            auto const& renderFinishedSemaphore = renderFinishedSemaphores[index];
 
             // Get an image from the swap chain
             uint32_t const nextImageIndex = this->vkSwapChain->getNextImage(imageAvailableSemaphore);
 
             // Record the command buffer
-            this->vkCommandBuffer->reset();
-            this->vkCommandBuffer->begin();
-            this->vkCommandBuffer->beginRenderPass(
+            commandBuffer->reset();
+            commandBuffer->begin();
+            commandBuffer->beginRenderPass(
                 this->vkRenderPass,
                 this->vkFrameBuffers[nextImageIndex],
                 {0, 0},
                 this->vkSwapChain->config.imageExtent);
-            this->vkCommandBuffer->bindGraphicsPipeline(this->vkGraphicsPipeline);
-            this->vkCommandBuffer->setViewport(this->vkSwapChain->config.imageExtent);
-            this->vkCommandBuffer->setScissor({0, 0}, this->vkSwapChain->config.imageExtent);
-            this->vkCommandBuffer->draw(3, 1, 0, 0);
-            this->vkCommandBuffer->endRenderPass();
-            this->vkCommandBuffer->end();
+            commandBuffer->bindGraphicsPipeline(this->vkGraphicsPipeline);
+            commandBuffer->setViewport(this->vkSwapChain->config.imageExtent);
+            commandBuffer->setScissor({0, 0}, this->vkSwapChain->config.imageExtent);
+            commandBuffer->draw(3, 1, 0, 0);
+            commandBuffer->endRenderPass();
+            commandBuffer->end();
 
             // Submit the command buffer to render some stuff
             this->vkGraphicsQueue->submit(
                 {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
                 {imageAvailableSemaphore},
-                {renderFinishedSemaphore},
-                {this->vkCommandBuffer},
+                {renderCompleteSemaphore},
+                {commandBuffer},
                 inFlightFence);
 
             // Present the rendered image!
             this->vkPresentQueue->present(
-                {renderFinishedSemaphore},
+                {renderCompleteSemaphore},
                 this->vkSwapChain,
                 nextImageIndex);
         }
