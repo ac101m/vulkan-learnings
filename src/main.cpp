@@ -253,17 +253,28 @@ public:
 
         unsigned frame = 0;
 
-        std::shared_ptr<utils::vulkan::Semaphore> imageAvailableSemaphore = this->vkDevice->createSemaphore();
-        std::shared_ptr<utils::vulkan::Semaphore> renderFinishedSemaphore = this->vkDevice->createSemaphore();
+        std::vector<std::shared_ptr<utils::vulkan::Semaphore>> imageAvailableSemaphores(this->vkFrameBuffers.size());
+        std::vector<std::shared_ptr<utils::vulkan::Semaphore>> renderFinishedSemaphores(this->vkFrameBuffers.size());
+
+        for (unsigned i = 0; i < this->vkFrameBuffers.size(); i++) {
+            imageAvailableSemaphores[i] = this->vkDevice->createSemaphore();
+            renderFinishedSemaphores[i] = this->vkDevice->createSemaphore();
+        }
+
         std::shared_ptr<utils::vulkan::Fence> inFlightFence = this->vkDevice->createFence(VK_FENCE_CREATE_SIGNALED_BIT);
 
-        while (!glfwWindow->shouldClose()) {
+        while (!glfwWindow->shouldClose() && frame < 10000) {
             INFO(log) << "Frame: " << frame++ << '\n';
             glfwPollEvents();
 
             // Wait for the previous frame to be done
             inFlightFence->wait();
             inFlightFence->reset();
+
+            uint32_t index = frame % this->vkFrameBuffers.size();
+
+            auto const& imageAvailableSemaphore = imageAvailableSemaphores[index];
+            auto const& renderFinishedSemaphore = renderFinishedSemaphores[index];
 
             // Get an image from the swap chain
             uint32_t const nextImageIndex = this->vkSwapChain->getNextImage(imageAvailableSemaphore);

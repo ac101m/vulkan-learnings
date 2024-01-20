@@ -132,7 +132,8 @@ namespace utils::vulkan {
             this->vkHandle->vk,
             UINT64_MAX,
             imageAvailableSemaphore->getHandle()->vk,
-            VK_NULL_HANDLE, &imageIndex);
+            VK_NULL_HANDLE,
+            &imageIndex);
         return imageIndex;
     }
 

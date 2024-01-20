@@ -45,13 +45,13 @@ namespace utils::vulkan {
 
         VkSubmitInfo submitInfo {};
         submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
         submitInfo.pWaitSemaphores = waitSemaphoreArray;
         submitInfo.pWaitDstStageMask = waitStages.data();
-        submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+        submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
         submitInfo.pCommandBuffers = commandBuffersArray;
-        submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
+        submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
         submitInfo.pSignalSemaphores = signalSemaphoreArray;
+        submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
 
         if (vkQueueSubmit(this->vkQueue, 1, &submitInfo, inFlightFence->getHandle()->vk) != VK_SUCCESS) {
             throw std::runtime_error("failed to submit draw command buffer.");
