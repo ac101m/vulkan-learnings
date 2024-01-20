@@ -51,7 +51,7 @@ namespace utils::vulkan {
     };
 
 
-    class GraphicsPipeline : HandleWrapper<PipelineHandle> {
+    class GraphicsPipeline : public HandleWrapper<PipelineHandle> {
     private:
         static utils::Logger log;
 

@@ -178,7 +178,11 @@ private:
         utils::vulkan::SubPassDescription subPass(VK_PIPELINE_BIND_POINT_GRAPHICS);
         subPass.addColorAttachment(outputIndex, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
-        config.addSubPass(subPass);
+        uint32_t subPassIndex = config.addSubPass(subPass);
+        config.addSubPassDependency(
+            VK_SUBPASS_EXTERNAL, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, subPassIndex,
+            subPassIndex, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT
+        );
 
         return config;
     }
@@ -241,23 +245,64 @@ public:
 
         this->vkCommandPool = this->vkDevice->createCommandPool(createCommandPoolConfig());
         this->vkCommandBuffer = this->vkCommandPool->allocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-
-        this->vkCommandBuffer->begin();
     }
 
 
     void run() {
         INFO(log) << "Main loop starting." << std::endl;
 
-        unsigned i = 0;
+        unsigned frame = 0;
+
+        std::shared_ptr<utils::vulkan::Semaphore> imageAvailableSemaphore = this->vkDevice->createSemaphore();
+        std::shared_ptr<utils::vulkan::Semaphore> renderFinishedSemaphore = this->vkDevice->createSemaphore();
+        std::shared_ptr<utils::vulkan::Fence> inFlightFence = this->vkDevice->createFence(VK_FENCE_CREATE_SIGNALED_BIT);
+
         while (!glfwWindow->shouldClose()) {
-            INFO(log) << "Frame: " << i++ << '\r';
+            INFO(log) << "Frame: " << frame++ << '\n';
             glfwPollEvents();
+
+            // Wait for the previous frame to be done
+            inFlightFence->wait();
+            inFlightFence->reset();
+
+            // Get an image from the swap chain
+            uint32_t const nextImageIndex = this->vkSwapChain->getNextImage(imageAvailableSemaphore);
+
+            // Record the command buffer
+            this->vkCommandBuffer->reset();
+            this->vkCommandBuffer->begin();
+            this->vkCommandBuffer->beginRenderPass(
+                this->vkRenderPass,
+                this->vkFrameBuffers[nextImageIndex],
+                {0, 0},
+                this->vkSwapChain->config.imageExtent);
+            this->vkCommandBuffer->bindGraphicsPipeline(this->vkGraphicsPipeline);
+            this->vkCommandBuffer->setViewport(this->vkSwapChain->config.imageExtent);
+            this->vkCommandBuffer->setScissor({0, 0}, this->vkSwapChain->config.imageExtent);
+            this->vkCommandBuffer->draw(3, 1, 0, 0);
+            this->vkCommandBuffer->endRenderPass();
+            this->vkCommandBuffer->end();
+
+            // Submit the command buffer to render some stuff
+            this->vkGraphicsQueue->submit(
+                {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT},
+                {imageAvailableSemaphore},
+                {renderFinishedSemaphore},
+                {this->vkCommandBuffer},
+                inFlightFence);
+
+            // Present the rendered image!
+            this->vkPresentQueue->present(
+                {renderFinishedSemaphore},
+                this->vkSwapChain,
+                nextImageIndex);
         }
 
-        std::cout << std::endl;
+        INFO(log) << "Main loop stopped, waiting for device idle..." << std::endl;
 
-        INFO(log) << "Main loop stopped." << std::endl;
+        this->vkDevice->waitIdle();
+
+        INFO(log) << "Device idle, shutting down." << std::endl;
     }
 };
 

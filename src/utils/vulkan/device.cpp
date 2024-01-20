@@ -146,4 +146,19 @@ namespace utils::vulkan {
     std::shared_ptr<CommandPool> Device::createCommandPool(CommandPoolConfig const& config) const {
         return std::make_shared<CommandPool>(this->vkDeviceHandle, config);
     }
+
+
+    std::shared_ptr<Semaphore> Device::createSemaphore() const {
+        return std::make_shared<Semaphore>(this->vkDeviceHandle);
+    }
+
+
+    std::shared_ptr<Fence> Device::createFence(VkFenceCreateFlagBits const flags) const {
+        return std::make_shared<Fence>(this->vkDeviceHandle, flags);
+    }
+
+
+    void Device::waitIdle() const {
+        vkDeviceWaitIdle(this->vkDeviceHandle->vk);
+    }
 }

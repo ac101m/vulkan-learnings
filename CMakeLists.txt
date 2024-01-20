@@ -29,7 +29,9 @@ set(UTILS_VULKAN_SOURCE_SET
     src/utils/vulkan/graphics_pipeline.cpp
     src/utils/vulkan/frame_buffer.cpp
     src/utils/vulkan/command_pool.cpp
-    src/utils/vulkan/command_buffer.cpp)
+    src/utils/vulkan/command_buffer.cpp
+    src/utils/vulkan/semaphore.cpp
+    src/utils/vulkan/fence.cpp)
 
 set(UTILS_MISC_SOURCE_SET
     src/utils/misc/logging.cpp

@@ -47,7 +47,7 @@ namespace utils::vulkan {
         std::shared_ptr<SurfaceHandle> const& vkSurfaceHandle,
         SwapChainConfig const& config
     ) :
-        vkSwapChainHandle(std::make_shared<SwapChainHandle>(vkDeviceHandle)),
+        HandleWrapper<SwapChainHandle>(std::make_shared<SwapChainHandle>(vkDeviceHandle)),
         vkDeviceHandle(vkDeviceHandle),
         vkSurfaceHandle(vkSurfaceHandle),
         config(config)
@@ -82,7 +82,7 @@ namespace utils::vulkan {
         createInfo.clipped = VK_TRUE;
         createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-        if (vkCreateSwapchainKHR(this->vkDeviceHandle->vk, &createInfo, nullptr, &this->vkSwapChainHandle->vk)) {
+        if (vkCreateSwapchainKHR(this->vkDeviceHandle->vk, &createInfo, nullptr, &this->vkHandle->vk)) {
             throw std::runtime_error("Failed to create swap chain.");
         }
 
@@ -92,13 +92,13 @@ namespace utils::vulkan {
 
     void SwapChain::populateImageList() {
         uint32_t imageCount;
-        vkGetSwapchainImagesKHR(this->vkDeviceHandle->vk, this->vkSwapChainHandle->vk, &imageCount, nullptr);
+        vkGetSwapchainImagesKHR(this->vkDeviceHandle->vk, this->vkHandle->vk, &imageCount, nullptr);
 
         std::vector<VkImage> swapChainImages(imageCount);
-        vkGetSwapchainImagesKHR(this->vkDeviceHandle->vk, this->vkSwapChainHandle->vk, &imageCount, swapChainImages.data());
+        vkGetSwapchainImagesKHR(this->vkDeviceHandle->vk, this->vkHandle->vk, &imageCount, swapChainImages.data());
 
         for (auto const& swapChainImage : swapChainImages) {
-            auto const swapChainImageHandle = std::make_shared<ImageHandle>(this->vkDeviceHandle, this->vkSwapChainHandle);
+            auto const swapChainImageHandle = std::make_shared<ImageHandle>(this->vkDeviceHandle, this->vkHandle);
             swapChainImageHandle->vk = swapChainImage;
             this->images.push_back(std::make_shared<Image>(swapChainImageHandle, this->vkDeviceHandle));
         }
@@ -122,6 +122,18 @@ namespace utils::vulkan {
         }
 
         return views;
+    }
+
+
+    uint32_t SwapChain::getNextImage(std::shared_ptr<Semaphore> const& imageAvailableSemaphore) {
+        uint32_t imageIndex;
+        vkAcquireNextImageKHR(
+            this->vkDeviceHandle->vk,
+            this->vkHandle->vk,
+            UINT64_MAX,
+            imageAvailableSemaphore->getHandle()->vk,
+            VK_NULL_HANDLE, &imageIndex);
+        return imageIndex;
     }
 
 }

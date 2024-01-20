@@ -3,6 +3,7 @@
 #include "utils/misc/logging.hpp"
 #include "utils/vulkan/handles.hpp"
 #include "utils/vulkan/image.hpp"
+#include "utils/vulkan/semaphore.hpp"
 
 #include <set>
 #include <vector>
@@ -60,11 +61,10 @@ namespace utils::vulkan {
     };
 
 
-    class SwapChain {
+    class SwapChain : public HandleWrapper<SwapChainHandle> {
     private:
         static utils::Logger log;
 
-        std::shared_ptr<SwapChainHandle> const vkSwapChainHandle;
         std::shared_ptr<DeviceHandle> const vkDeviceHandle;
         std::shared_ptr<SurfaceHandle> const vkSurfaceHandle;
 
@@ -95,6 +95,12 @@ namespace utils::vulkan {
          * @return Vector containing shared pointers to image views.
          */
         std::vector<std::shared_ptr<ImageView>> createImageViews(ImageViewConfig const& config);
+
+        /**
+         * @brief Get the index of the next image.
+         * @return Index of the next image in the swap chain.
+         */
+        uint32_t getNextImage(std::shared_ptr<Semaphore> const& imageAvailableSemaphore);
     };
 
 }

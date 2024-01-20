@@ -71,6 +71,7 @@ namespace utils::vulkan {
     struct RenderPassConfig {
         std::vector<AttachmentDescription> attachments;
         std::vector<SubPassDescription> subPasses;
+        std::vector<VkSubpassDependency> subPassDependencies;
 
         /**
          * @brief Add an attachment description.
@@ -84,10 +85,41 @@ namespace utils::vulkan {
 
         /**
          * @brief Add a sub-pass description.
-         * @param description Sub pass description to add.
+         * @param description Description of sub pass to add.
          */
-        void addSubPass(SubPassDescription const& description) {
+        uint32_t addSubPass(SubPassDescription const& description) {
             subPasses.push_back(description);
+            return subPasses.size() - 1;
+        }
+
+        /**
+         * @brief Create subpass dependency object.
+         * @param srcSubpass Index of the source subpass.
+         * @param srcStageMask Source subpass stages where the dependency applies.
+         * @param srcAccessMask Access types of the source dependency.
+         * @param dstSubpass Index of the destination subpass.
+         * @param dstStageMask Destination stage where the dependency is important.
+         * @param dstAccessMask Access types of the target dependency.
+         * @param dependencyFlags ???
+         */
+        void addSubPassDependency(
+            uint32_t const srcSubpass,
+            VkPipelineStageFlags const srcStageMask,
+            VkAccessFlags const srcAccessMask,
+            uint32_t const dstSubpass,
+            VkPipelineStageFlags const dstStageMask,
+            VkAccessFlags const dstAccessMask,
+            VkDependencyFlags const dependencyFlags = 0
+        ) {
+            subPassDependencies.push_back({
+                srcSubpass,
+                dstSubpass,
+                srcStageMask,
+                dstStageMask,
+                srcAccessMask,
+                dstAccessMask,
+                dependencyFlags
+            });
         }
     };
 

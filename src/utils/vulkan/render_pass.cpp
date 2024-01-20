@@ -25,10 +25,12 @@ namespace utils::vulkan {
 
         VkRenderPassCreateInfo renderPassInfo {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = static_cast<uint32_t>(config.attachments.size());
         renderPassInfo.pAttachments = attachmentDescriptions;
-        renderPassInfo.subpassCount = static_cast<uint32_t>(config.subPasses.size());
+        renderPassInfo.attachmentCount = static_cast<uint32_t>(config.attachments.size());
         renderPassInfo.pSubpasses = subpassDescriptions;
+        renderPassInfo.subpassCount = static_cast<uint32_t>(config.subPasses.size());
+        renderPassInfo.pDependencies = config.subPassDependencies.data();
+        renderPassInfo.dependencyCount = static_cast<uint32_t>(config.subPassDependencies.size());
 
         if (vkCreateRenderPass(this->vkDeviceHandle->vk, &renderPassInfo, nullptr, &this->vkHandle->vk) != VK_SUCCESS) {
             throw std::runtime_error("failed to create render pass.");

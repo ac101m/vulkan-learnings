@@ -17,7 +17,7 @@ namespace utils::vulkan {
     };
 
 
-    class CommandPool : HandleWrapper<CommandPoolHandle> {
+    class CommandPool : public HandleWrapper<CommandPoolHandle> {
     private:
         static utils::Logger log;
 

@@ -259,4 +259,42 @@ namespace utils::vulkan {
             vkDestroyCommandPool(this->vkDeviceHandle->vk, this->vk, nullptr);
         }
     };
+
+
+    /**
+     * @brief Class for managing lifetime of VkSemaphore objects.
+     */
+    class SemaphoreHandle {
+    private:
+        std::shared_ptr<DeviceHandle> const vkDeviceHandle;
+
+    public:
+        VkSemaphore_T * vk;
+
+        SemaphoreHandle(std::shared_ptr<DeviceHandle> const& vkDeviceHandle) :
+            vkDeviceHandle(vkDeviceHandle) {}
+
+        ~SemaphoreHandle() {
+            vkDestroySemaphore(this->vkDeviceHandle->vk, this->vk, nullptr);
+        }
+    };
+
+
+    /**
+     * @brief Class for managing lifetime of VkFence objects.
+     */
+    class FenceHandle {
+    private:
+        std::shared_ptr<DeviceHandle> const vkDeviceHandle;
+
+    public:
+        VkFence_T * vk;
+
+        FenceHandle(std::shared_ptr<DeviceHandle> const& vkDeviceHandle) :
+            vkDeviceHandle(vkDeviceHandle) {}
+
+        ~FenceHandle() {
+            vkDestroyFence(this->vkDeviceHandle->vk, this->vk, nullptr);
+        }
+    };
 }

@@ -9,6 +9,8 @@
 #include "utils/vulkan/graphics_pipeline.hpp"
 #include "utils/vulkan/frame_buffer.hpp"
 #include "utils/vulkan/command_pool.hpp"
+#include "utils/vulkan/semaphore.hpp"
+#include "utils/vulkan/fence.hpp"
 
 #include "utils/misc/logging.hpp"
 
@@ -113,6 +115,24 @@ namespace utils::vulkan {
          * @return Shared pointer to new command pool object.
          */
         std::shared_ptr<CommandPool> createCommandPool(CommandPoolConfig const& config) const;
+
+        /**
+         * @brief Create a new semaphore object.
+         * @return Shared pointer to new semaphore object.
+         */
+        std::shared_ptr<Semaphore> createSemaphore() const;
+
+        /**
+         * @brief Create a new fence object.
+         * @param flags Fence create flags.
+         * @return Shared pointer to new fence object.
+         */
+        std::shared_ptr<Fence> createFence(VkFenceCreateFlagBits const flags) const;
+
+        /**
+         * @brief Wait for device to be idle.
+         */
+        void waitIdle() const;
 
         /**
          * @brief Return a reference to the device handle.
