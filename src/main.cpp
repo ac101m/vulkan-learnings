@@ -265,7 +265,7 @@ public:
             inFlightFences[i] = this->vkDevice->createFence(VK_FENCE_CREATE_SIGNALED_BIT);
         }
 
-        while (!glfwWindow->shouldClose() && frame < 10000) {
+        while (!glfwWindow->shouldClose()) {
             INFO(log) << "Frame: " << frame++ << '\n';
             glfwPollEvents();
 
