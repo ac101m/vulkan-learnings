@@ -266,7 +266,6 @@ public:
         }
 
         while (!glfwWindow->shouldClose()) {
-            INFO(log) << "Frame: " << frame++ << '\n';
             glfwPollEvents();
 
             auto const& commandBuffer = commandBuffers[contextIndex];
