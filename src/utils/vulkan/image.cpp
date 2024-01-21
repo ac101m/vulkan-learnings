@@ -7,13 +7,13 @@ namespace utils::vulkan {
 
 
     Image::Image(std::shared_ptr<ImageHandle> const& vkImageHandle, std::shared_ptr<DeviceHandle> const& vkDeviceHandle) :
-        vkImageHandle(vkImageHandle), vkDeviceHandle(vkDeviceHandle)
+        HandleWrapper<ImageHandle>(vkImageHandle), vkDeviceHandle(vkDeviceHandle)
     {
         INFO(log) << "Wrapping swap chain image." << std::endl;
     }
 
 
     std::shared_ptr<ImageView> Image::createImageView(ImageViewConfig const& config) {
-        return std::make_shared<ImageView>(this->vkDeviceHandle, this->vkImageHandle, config);
+        return std::make_shared<ImageView>(this->vkDeviceHandle, this->vkHandle, config);
     }
 }

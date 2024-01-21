@@ -10,11 +10,10 @@
 
 namespace utils::vulkan {
 
-    class ShaderModule {
+    class ShaderModule : public HandleWrapper<ShaderModuleHandle> {
     private:
         static utils::Logger log;
 
-        std::shared_ptr<ShaderModuleHandle> const vkShaderModuleHandle;
         std::shared_ptr<DeviceHandle> const vkDeviceHandle;
 
         std::filesystem::path const path;
@@ -23,14 +22,6 @@ namespace utils::vulkan {
         ShaderModule(
             std::shared_ptr<DeviceHandle> const& vkDeviceHandle,
             std::filesystem::path const& path);
-
-        /**
-         * @brief Return a reference to the shader module handle.
-         * @return Shared pointer to shader module handle instance.
-         */
-        std::shared_ptr<ShaderModuleHandle> getHandle() {
-            return this->vkShaderModuleHandle;
-        }
     };
 
 }

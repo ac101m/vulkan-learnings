@@ -18,6 +18,7 @@ set(UTILS_VULKAN_SOURCE_SET
     src/utils/vulkan/physical_device.cpp
     src/utils/vulkan/device.cpp
     src/utils/vulkan/helpers.cpp
+    src/utils/vulkan/handles.cpp
     src/utils/vulkan/queue.cpp
     src/utils/vulkan/surface.cpp
     src/utils/vulkan/swap_chain.cpp

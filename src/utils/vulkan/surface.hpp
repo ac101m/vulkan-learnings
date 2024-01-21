@@ -9,26 +9,21 @@
 
 namespace utils::vulkan {
 
-    class Surface {
+    class Surface : public HandleWrapper<SurfaceHandle> {
     private:
         static utils::Logger log;
 
-        std::shared_ptr<SurfaceHandle> const surfaceHandle;
         std::shared_ptr<InstanceHandle> const instanceHandle;
         std::shared_ptr<utils::glfw::WindowHandle> const windowHandle;
 
     public:
         Surface(std::shared_ptr<InstanceHandle> const& instanceHandle, std::shared_ptr<utils::glfw::WindowHandle> const& windowHandle);
 
-        VkExtent2D getSurfaceExtent() const;
-
         /**
-         * @brief Return a reference to the surface handle.
-         * @return Shared pointer to surface handle instance.
+         * @brief Get the size of a present surface.
+         * @return VkExtent2D containing surface stize.
          */
-        std::shared_ptr<SurfaceHandle> getHandle() {
-            return this->surfaceHandle;
-        }
+        VkExtent2D getSurfaceExtent() const;
     };
 
 }

@@ -85,4 +85,22 @@ namespace utils::vulkan {
         }
     };
 
+
+    /**
+     * @brief Create a debug messenger object.
+     */
+    VkResult CreateDebugUtilsMessengerEXT(
+        VkInstance const& instance,
+        VkDebugUtilsMessengerCreateInfoEXT const * pCreateInfo,
+        VkAllocationCallbacks const * pAllocator,
+        VkDebugUtilsMessengerEXT * pDebugMessenger);
+
+    /**
+     * @brief Destroy a debug messenger object.
+     */
+    void DestroyDebugUtilsMessengerEXT(
+        VkInstance const& instance,
+        VkDebugUtilsMessengerEXT debugMessenger,
+        VkAllocationCallbacks const * pAllocator);
+
 }

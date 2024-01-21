@@ -24,12 +24,11 @@
 
 namespace utils::vulkan {
 
-    class Device {
+    class Device : public HandleWrapper<DeviceHandle> {
     private:
         static utils::Logger log;
 
         std::shared_ptr<InstanceHandle> vkInstanceHandle;
-        std::shared_ptr<DeviceHandle> vkDeviceHandle;
 
         std::map<std::string, std::shared_ptr<Queue>> queueMap;
 
@@ -133,14 +132,6 @@ namespace utils::vulkan {
          * @brief Wait for device to be idle.
          */
         void waitIdle() const;
-
-        /**
-         * @brief Return a reference to the device handle.
-         * @return Shared pointer to device handle instance.
-         */
-        std::shared_ptr<DeviceHandle> getHandle() {
-            return this->vkDeviceHandle;
-        }
 
     };
 

@@ -18,7 +18,7 @@ namespace utils::vulkan {
 
 
     Instance::Instance(std::vector<std::string> const& validationLayers) :
-        instanceHandle(std::make_shared<InstanceHandle>()),
+        HandleWrapper<InstanceHandle>(std::make_shared<InstanceHandle>()),
         debugEnabled(validationLayers.size() > 0),
         validationLayers(validationLayers)
     {
@@ -62,34 +62,34 @@ namespace utils::vulkan {
             createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &debugCreateInfo;
         }
 
-        if (vkCreateInstance(&createInfo, nullptr, &this->instanceHandle->vk) != VK_SUCCESS) {
+        if (vkCreateInstance(&createInfo, nullptr, &this->vkHandle->vk) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create vulkan instance!");
         }
 
         if (debugEnabled) {
             debugMessenger = std::shared_ptr<DebugMessenger>(
-                new DebugMessenger(instanceHandle, logMessageSeverities, logMessageTypes));
+                new DebugMessenger(this->vkHandle, logMessageSeverities, logMessageTypes));
         }
     }
 
 
     std::shared_ptr<Surface> Instance::createWindowSurface(std::shared_ptr<utils::glfw::Window> const& window) const {
-        return std::make_shared<Surface>(this->instanceHandle, window->getHandle());
+        return std::make_shared<Surface>(this->vkHandle, window->getHandle());
     }
 
 
     std::vector<std::shared_ptr<PhysicalDevice>> Instance::getPhysicalDevices() const {
         uint32_t deviceCount = 0;
-        vkEnumeratePhysicalDevices(this->instanceHandle->vk, &deviceCount, nullptr);
+        vkEnumeratePhysicalDevices(this->vkHandle->vk, &deviceCount, nullptr);
 
         std::vector<VkPhysicalDevice> vkDevices(deviceCount);
-        vkEnumeratePhysicalDevices(this->instanceHandle->vk, &deviceCount, vkDevices.data());
+        vkEnumeratePhysicalDevices(this->vkHandle->vk, &deviceCount, vkDevices.data());
 
         std::vector<std::shared_ptr<PhysicalDevice>> devices;
         devices.reserve(deviceCount);
 
         for (auto const& vkDevice : vkDevices) {
-            devices.push_back(std::make_shared<PhysicalDevice>(this->instanceHandle, vkDevice));
+            devices.push_back(std::make_shared<PhysicalDevice>(this->vkHandle, vkDevice));
         }
 
         return devices;

@@ -16,11 +16,10 @@
 
 namespace utils::vulkan {
 
-    class Instance {
+    class Instance : public HandleWrapper<InstanceHandle> {
     private:
         static utils::Logger log;
 
-        std::shared_ptr<InstanceHandle> const instanceHandle;
         std::shared_ptr<DebugMessenger> debugMessenger = nullptr;
 
         bool const debugEnabled;

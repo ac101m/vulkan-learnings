@@ -1,6 +1,6 @@
 #pragma once
 
-#include "utils/vulkan/helpers.hpp"
+#include "utils/vulkan/handles.hpp"
 #include "utils/misc/logging.hpp"
 
 #include "vulkan/vulkan.h"
@@ -19,36 +19,17 @@ namespace utils::vulkan {
     );
 
 
-    class DebugMessenger {
+    class DebugMessenger : public HandleWrapper<DebugMessengerHandle> {
     private:
         static utils::Logger log;
 
         std::shared_ptr<InstanceHandle> const instanceHandle;
-
-        VkDebugUtilsMessengerEXT_T * vk;
-
-    private:
-        static VkResult CreateDebugUtilsMessengerEXT(
-            VkInstance const& instance,
-            VkDebugUtilsMessengerCreateInfoEXT const * pCreateInfo,
-            VkAllocationCallbacks const * pAllocator,
-            VkDebugUtilsMessengerEXT * pDebugMessenger
-        );
-
-
-        static void DestroyDebugUtilsMessengerEXT(
-            VkInstance const& instance,
-            VkDebugUtilsMessengerEXT debugMessenger,
-            VkAllocationCallbacks const * pAllocator
-        );
 
     public:
         DebugMessenger(
             std::shared_ptr<InstanceHandle> const& instanceHandle,
             uint32_t const logMessageSeverities,
             uint32_t const logMessageTypes);
-
-        ~DebugMessenger();
     };
 
 }

@@ -22,7 +22,7 @@ namespace utils::vulkan {
             vkHandle(vkHandle) {}
 
         /**
-         * @brief Retrieve handle of underlying vulkan object.
+         * @brief Retrieve handle of wrapped vulkan object.
          * @return Shared pointer to handle object.
          */
         std::shared_ptr<T> getHandle() const {
@@ -41,6 +41,23 @@ namespace utils::vulkan {
         ~InstanceHandle() {
             vkDestroyInstance(this->vk, nullptr);
         }
+    };
+
+
+    /**
+     * @brief Class for managing lifetime of VkDebugMessenger_EXT objects.
+     */
+    class DebugMessengerHandle {
+    private:
+        std::shared_ptr<InstanceHandle> const instanceHandle;
+
+    public:
+        VkDebugUtilsMessengerEXT_T * vk;
+
+        DebugMessengerHandle(std::shared_ptr<InstanceHandle> const& instanceHandle) :
+            instanceHandle(instanceHandle) {}
+
+        ~DebugMessengerHandle();
     };
 
 

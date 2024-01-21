@@ -11,7 +11,7 @@ namespace utils::vulkan {
         std::shared_ptr<DeviceHandle> const& vkDeviceHandle,
         std::filesystem::path const& path
     ) :
-        vkShaderModuleHandle(std::make_shared<ShaderModuleHandle>(vkDeviceHandle)),
+        HandleWrapper<ShaderModuleHandle>(std::make_shared<ShaderModuleHandle>(vkDeviceHandle)),
         vkDeviceHandle(vkDeviceHandle),
         path(path)
     {
@@ -24,7 +24,7 @@ namespace utils::vulkan {
         createInfo.codeSize = shaderCode.size();
         createInfo.pCode = reinterpret_cast<const uint32_t*>(shaderCode.data());
 
-        if (vkCreateShaderModule(this->vkDeviceHandle->vk, &createInfo, nullptr, &this->vkShaderModuleHandle->vk) != VK_SUCCESS) {
+        if (vkCreateShaderModule(this->vkDeviceHandle->vk, &createInfo, nullptr, &this->vkHandle->vk) != VK_SUCCESS) {
             throw std::runtime_error("failed to create shader module.");
         }
     }

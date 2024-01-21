@@ -33,8 +33,8 @@ namespace utils::vulkan {
         std::vector<std::string> const& deviceExtensions,
         std::vector<std::string> const& validationLayerNames
     ) :
-        vkInstanceHandle(vkInstanceHandle),
-        vkDeviceHandle(std::make_shared<DeviceHandle>())
+        HandleWrapper<DeviceHandle>(std::make_shared<DeviceHandle>()),
+        vkInstanceHandle(vkInstanceHandle)
     {
         INFO(log) << "Creating logical device." << std::endl;
 
@@ -71,7 +71,7 @@ namespace utils::vulkan {
         createInfo.enabledExtensionCount = deviceExtensionParams.size();
         createInfo.ppEnabledExtensionNames = deviceExtensionParams.data();
 
-        if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &this->vkDeviceHandle->vk) != VK_SUCCESS) {
+        if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &this->vkHandle->vk) != VK_SUCCESS) {
             throw std::runtime_error("Failed to create logical device.");
         }
 
@@ -86,7 +86,7 @@ namespace utils::vulkan {
 
             for (unsigned i = 0; i < queueNames.size(); i++) {
                 auto const& queueName = queueNames[i];
-                auto const queue = std::make_shared<Queue>(this->vkDeviceHandle, queueFamilyIndex, i, queueNames[i]);
+                auto const queue = std::make_shared<Queue>(this->vkHandle, queueFamilyIndex, i, queueNames[i]);
                 this->queueMap.insert(std::make_pair(queueName, queue));
             }
         }
@@ -106,22 +106,22 @@ namespace utils::vulkan {
         std::shared_ptr<Surface> const& surface,
         SwapChainConfig const& swapChainConfig
     ) const {
-        return std::make_shared<SwapChain>(this->vkDeviceHandle, surface->getHandle(), swapChainConfig);
+        return std::make_shared<SwapChain>(this->vkHandle, surface->getHandle(), swapChainConfig);
     }
 
 
     std::shared_ptr<ShaderModule> Device::createShaderModule(std::filesystem::path const& path) const {
-        return std::make_shared<ShaderModule>(this->vkDeviceHandle, path);
+        return std::make_shared<ShaderModule>(this->vkHandle, path);
     }
 
 
     std::shared_ptr<PipelineLayout> Device::createPipelineLayout(PipelineLayoutConfig const& config) const {
-        return std::make_shared<PipelineLayout>(this->vkDeviceHandle, config);
+        return std::make_shared<PipelineLayout>(this->vkHandle, config);
     }
 
 
     std::shared_ptr<RenderPass> Device::createRenderPass(RenderPassConfig const& config) const {
-        return std::make_shared<RenderPass>(this->vkDeviceHandle, config);
+        return std::make_shared<RenderPass>(this->vkHandle, config);
     }
 
 
@@ -131,7 +131,7 @@ namespace utils::vulkan {
         GraphicsPipelineConfig const& config
     ) const {
         return std::make_shared<GraphicsPipeline>(
-            this->vkDeviceHandle, pipelineLayout->getHandle(), renderPass->getHandle(), config);
+            this->vkHandle, pipelineLayout->getHandle(), renderPass->getHandle(), config);
     }
 
 
@@ -139,27 +139,27 @@ namespace utils::vulkan {
         std::shared_ptr<RenderPass> const& renderPass,
         FrameBufferConfig const& config
     ) const {
-        return std::make_shared<FrameBuffer>(this->vkDeviceHandle, renderPass->getHandle(), config);
+        return std::make_shared<FrameBuffer>(this->vkHandle, renderPass->getHandle(), config);
     }
 
 
     std::shared_ptr<CommandPool> Device::createCommandPool(CommandPoolConfig const& config) const {
-        return std::make_shared<CommandPool>(this->vkDeviceHandle, config);
+        return std::make_shared<CommandPool>(this->vkHandle, config);
     }
 
 
     std::shared_ptr<Semaphore> Device::createSemaphore() const {
-        return std::make_shared<Semaphore>(this->vkDeviceHandle);
+        return std::make_shared<Semaphore>(this->vkHandle);
     }
 
 
     std::shared_ptr<Fence> Device::createFence(VkFenceCreateFlagBits const flags) const {
-        return std::make_shared<Fence>(this->vkDeviceHandle, flags);
+        return std::make_shared<Fence>(this->vkHandle, flags);
     }
 
 
     void Device::waitIdle() const {
-        if (vkDeviceWaitIdle(this->vkDeviceHandle->vk) != VK_SUCCESS) {
+        if (vkDeviceWaitIdle(this->vkHandle->vk) != VK_SUCCESS) {
             throw std::runtime_error("Error waiting for device idle.");
         }
     }
