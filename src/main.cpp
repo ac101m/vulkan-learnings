@@ -200,6 +200,12 @@ private:
     void recreateSwapChain() {
         INFO(log) << "Re-creating swap chain..." << std::endl;
 
+        auto frameBufferSize = this->glfwWindow->getFrameBufferSize();
+        while (frameBufferSize.width == 0 || frameBufferSize.height == 0) {
+            frameBufferSize = this->glfwWindow->getFrameBufferSize();
+            glfwWaitEvents();
+        }
+
         this->vkDevice->waitIdle();
 
         this->vkFrameBuffers.clear();
