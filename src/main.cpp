@@ -30,7 +30,6 @@ private:
     std::shared_ptr<utils::vulkan::PhysicalDevice> vkPhysicalDevice;
     std::shared_ptr<utils::vulkan::Device> vkDevice;
     std::shared_ptr<utils::vulkan::Queue> vkGraphicsQueue;
-    std::shared_ptr<utils::vulkan::Queue> vkPresentQueue;
 
     std::shared_ptr<utils::vulkan::SwapChain> vkSwapChain;
     std::vector<std::shared_ptr<utils::vulkan::ImageView>> vkSwapChainImageViews;
@@ -52,7 +51,6 @@ private:
     };
 
     std::string const graphicsQueueName = "GRAPHICS_QUEUE";
-    std::string const presentQueueName = "PRESENT_QUEUE";
 
     uint32_t const MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -64,11 +62,9 @@ private:
             throw std::runtime_error("Cannot create queue plan, present surface is not initialized.");
         }
 
-        auto const graphicsQueueConstraints = utils::vulkan::QueueConstraints(VK_QUEUE_GRAPHICS_BIT, nullptr);
-        auto const presentQueueConstraints = utils::vulkan::QueueConstraints(0, this->vkPresentSurface);
+        auto const graphicsQueueConstraints = utils::vulkan::QueueConstraints(VK_QUEUE_GRAPHICS_BIT, this->vkPresentSurface);
 
         queuePlan.addQueue(graphicsQueueName, graphicsQueueConstraints);
-        queuePlan.addQueue(presentQueueName, presentQueueConstraints);
 
         return queuePlan;
     }
@@ -136,10 +132,6 @@ private:
             throw std::runtime_error("Cannot create swap chain config, graphics queue is not initialized.");
         }
 
-        if (this->vkPresentQueue == nullptr) {
-            throw std::runtime_error("Cannot create swap chain config, present queue is not initialized.");
-        }
-
         auto const swapChainSupportInfo = this->vkPhysicalDevice->getSwapChainSupportInfo(this->vkPresentSurface);
         auto const swapChainPreferences = createSwapChainPreferences();
 
@@ -147,7 +139,7 @@ private:
         config.surfaceFormat = swapChainPreferences.selectSurfaceFormat(swapChainSupportInfo.supportedSurfaceFormats);
         config.imageCount = pickSwapChainImageCount(swapChainSupportInfo);
         config.imageExtent = determineSwapChainImageExtent(swapChainSupportInfo.capabilities);
-        config.queueFamilyIndices = {this->vkGraphicsQueue->queueFamilyIndex, this->vkPresentQueue->queueFamilyIndex};
+        config.queueFamilyIndices = {this->vkGraphicsQueue->queueFamilyIndex};
         config.preTransform = swapChainSupportInfo.capabilities.currentTransform;
 
         return config;
@@ -205,11 +197,33 @@ private:
     }
 
 
+    void recreateSwapChain() {
+        INFO(log) << "Re-creating swap chain..." << std::endl;
+
+        this->vkDevice->waitIdle();
+
+        this->vkFrameBuffers.clear();
+        this->vkSwapChainImageViews.clear();
+        this->vkSwapChain.reset();
+
+        this->vkSwapChain = this->vkDevice->createSwapChain(this->vkPresentSurface, buildSwapChainConfig());
+        this->vkSwapChainImageViews = this->vkSwapChain->createImageViews(createSwapChainImageViewConfig());
+
+        for (unsigned i = 0; i < this->vkSwapChainImageViews.size(); i++) {
+            utils::vulkan::FrameBufferConfig config(this->vkSwapChain->config.imageExtent);
+            config.addAttachment(this->vkSwapChainImageViews[i]->getHandle());
+            this->vkFrameBuffers.push_back(this->vkDevice->createFrameBuffer(this->vkRenderPass, config));
+        }
+
+        INFO(log) << "Swap chain recreated." << std::endl;
+    }
+
+
 public:
     Application(uint32_t const windowWidth, uint32_t const windowHeight, bool doDebug) {
         auto const validationLayers = doDebug ? debugValidationLayers : std::vector<std::string>(0);
 
-        this->glfwWindow = std::make_shared<utils::glfw::Window>("Vulkan learnings", windowWidth, windowHeight);
+        this->glfwWindow = std::make_shared<utils::glfw::Window>("Vulkan learnings", windowWidth, windowHeight, true);
         this->vkInstance = std::make_shared<utils::vulkan::Instance>(validationLayers);
         this->vkPresentSurface = this->vkInstance->createWindowSurface(this->glfwWindow);
 
@@ -222,8 +236,6 @@ public:
         this->vkDevice = this->vkPhysicalDevice->createLogicalDevice(queuePlan, requiredDeviceExtensions);
 
         this->vkGraphicsQueue = this->vkDevice->getQueue(graphicsQueueName);
-        this->vkPresentQueue = this->vkDevice->getQueue(presentQueueName);
-
         this->vkSwapChain = this->vkDevice->createSwapChain(this->vkPresentSurface, buildSwapChainConfig());
         this->vkSwapChainImageViews = this->vkSwapChain->createImageViews(createSwapChainImageViewConfig());
 
@@ -250,7 +262,6 @@ public:
     void run() {
         INFO(log) << "Main loop starting." << std::endl;
 
-        unsigned frame = 0;
         unsigned contextIndex = 0;
 
         std::vector<std::shared_ptr<utils::vulkan::CommandBuffer>> commandBuffers(MAX_FRAMES_IN_FLIGHT);
@@ -277,10 +288,20 @@ public:
 
             // Wait for the previous frame to be done
             inFlightFence->wait();
-            inFlightFence->reset();
 
             // Get an image from the swap chain
-            uint32_t const nextImageIndex = this->vkSwapChain->getNextImage(imageAvailableSemaphore);
+            VkResult result;
+            uint32_t const nextImageIndex = this->vkSwapChain->getNextImage(imageAvailableSemaphore, &result);
+
+            if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+                recreateSwapChain();
+                continue;
+            } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+                throw std::runtime_error("Failed to acquire swap chain image.");
+            }
+
+            // Reset the fence in preparation for doing work
+            inFlightFence->reset();
 
             // Record the command buffer
             commandBuffer->reset();
@@ -306,10 +327,18 @@ public:
                 inFlightFence);
 
             // Present the rendered image!
-            this->vkPresentQueue->present(
+            this->vkGraphicsQueue->present(
                 {renderCompleteSemaphore},
                 this->vkSwapChain,
-                nextImageIndex);
+                nextImageIndex,
+                &result);
+
+            if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || this->glfwWindow->hasResized()) {
+                this->glfwWindow->resetResized();
+                recreateSwapChain();
+            } else if (result != VK_SUCCESS) {
+                throw std::runtime_error("Failed to present swap chain image.");
+            }
         }
 
         INFO(log) << "Main loop stopped, waiting for device idle..." << std::endl;
@@ -329,8 +358,14 @@ int main(void) {
 
     utils::glfw::Initializer glfwInitializer;
 
+#ifdef NDEBUG
+    bool doDebug = false;
+#else
+    bool doDebug = true;
+#endif
+
     try {
-        auto application = Application(800, 450, true);
+        auto application = Application(800, 450, doDebug);
         application.run();
     } catch (const std::exception& e) {
         ERROR(logger) << "Fatal error: " << e.what() << std::endl;

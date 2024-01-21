@@ -58,11 +58,13 @@ namespace utils::vulkan {
          * @param waitSemaphores Semaphores to wait on before executing the present operation.
          * @param swapChain The swap chain to present the image to.
          * @param imageIndex The index of the image in the swap chain to present.
+         * @param resultOut Pointer to VkResult to store result of vulkan call in.
          */
         void present(
             std::vector<std::shared_ptr<Semaphore>> const& waitSemaphores,
             std::shared_ptr<SwapChain> const& swapChain,
-            uint32_t const imageIndex);
+            uint32_t const imageIndex,
+            VkResult * const resultOut = nullptr);
     };
 
 }

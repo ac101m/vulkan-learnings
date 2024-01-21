@@ -159,6 +159,8 @@ namespace utils::vulkan {
 
 
     void Device::waitIdle() const {
-        vkDeviceWaitIdle(this->vkDeviceHandle->vk);
+        if (vkDeviceWaitIdle(this->vkDeviceHandle->vk) != VK_SUCCESS) {
+            throw std::runtime_error("Error waiting for device idle.");
+        }
     }
 }

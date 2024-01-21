@@ -10,7 +10,7 @@ namespace utils {
 #ifdef NDEBUG
     LogLevel Logger::globalLoggingLevel = WARN;
 #else
-    LogLevel Logger::globalLoggingLevel = INFO;
+    LogLevel Logger::globalLoggingLevel = TRACE;
 #endif
 
 

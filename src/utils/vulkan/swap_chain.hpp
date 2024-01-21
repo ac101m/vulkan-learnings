@@ -98,9 +98,11 @@ namespace utils::vulkan {
 
         /**
          * @brief Get the index of the next image.
+         * @param imageAvailableSemaphore A semaphore to signal once the image is available.
+         * @param result Pointer to VkResult instance to check status of call (optional).
          * @return Index of the next image in the swap chain.
          */
-        uint32_t getNextImage(std::shared_ptr<Semaphore> const& imageAvailableSemaphore);
+        uint32_t getNextImage(std::shared_ptr<Semaphore> const& imageAvailableSemaphore, VkResult * const resultOut = nullptr);
     };
 
 }

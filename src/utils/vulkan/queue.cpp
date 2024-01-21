@@ -62,7 +62,8 @@ namespace utils::vulkan {
     void Queue::present(
         std::vector<std::shared_ptr<Semaphore>> const& waitSemaphores,
         std::shared_ptr<SwapChain> const& swapChain,
-        uint32_t const imageIndex
+        uint32_t const imageIndex,
+        VkResult * const resultOut
     ) {
         VkSemaphore waitSemaphoreArray[waitSemaphores.size()];
         for (unsigned i = 0; i < waitSemaphores.size(); i++) {
@@ -78,6 +79,6 @@ namespace utils::vulkan {
         presentInfo.pImageIndices = &imageIndex;
         presentInfo.pResults = nullptr; // optional
 
-        vkQueuePresentKHR(this->vkQueue, &presentInfo);
+        VkResult rc = vkQueuePresentKHR(this->vkQueue, &presentInfo);
     }
 }

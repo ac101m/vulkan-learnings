@@ -8,18 +8,29 @@ namespace utils::glfw {
     utils::Logger Window::log = utils::Logger("Window");
 
 
-    Window::Window(std::string const name, uint32_t const width, uint32_t const height) :
+    void Window::resizeCallback(GLFWwindow * window, int width, int height) {
+        INFO(log) << "Window resized width=" << width << ", height=" << height << std::endl;
+        auto windowPtr = reinterpret_cast<Window *>(glfwGetWindowUserPointer(window));
+        windowPtr->resized = true;
+    }
+
+
+    Window::Window(std::string const name, uint32_t const width, uint32_t const height, bool const resizeable) :
         windowHandle(std::make_shared<WindowHandle>()), name(name)
     {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, resizeable ? GLFW_TRUE : GLFW_FALSE);
 
         INFO(log) << "Creating window. "
                   << "name=" << name << ", "
                   << "width=" << width << ", "
-                  << "height=" << height << std::endl;
+                  << "height=" << height << ", "
+                  << "resizeable=" << resizeable << std::endl;
 
         this->windowHandle->glfw = glfwCreateWindow(width, height, this->name.c_str(), nullptr, nullptr);
+
+        glfwSetWindowUserPointer(this->windowHandle->glfw, this);
+        glfwSetFramebufferSizeCallback(this->windowHandle->glfw, resizeCallback);
     }
 
 

@@ -125,15 +125,21 @@ namespace utils::vulkan {
     }
 
 
-    uint32_t SwapChain::getNextImage(std::shared_ptr<Semaphore> const& imageAvailableSemaphore) {
+    uint32_t SwapChain::getNextImage(std::shared_ptr<Semaphore> const& imageAvailableSemaphore, VkResult * const resultOut) {
         uint32_t imageIndex;
-        vkAcquireNextImageKHR(
+
+        VkResult rc = vkAcquireNextImageKHR(
             this->vkDeviceHandle->vk,
             this->vkHandle->vk,
             UINT64_MAX,
             imageAvailableSemaphore->getHandle()->vk,
             VK_NULL_HANDLE,
             &imageIndex);
+
+        if (resultOut != nullptr) {
+            *resultOut = rc;
+        }
+
         return imageIndex;
     }
 
