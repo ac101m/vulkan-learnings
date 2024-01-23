@@ -19,6 +19,25 @@
 #include <map>
 
 
+struct ColorVertex {
+    glm::vec2 position;
+    glm::vec3 color;
+
+    static void addToConfig(utils::vulkan::VertexInfo * const vertexInfo) {
+        uint32_t index = vertexInfo->addVertexType(sizeof(ColorVertex), VK_VERTEX_INPUT_RATE_VERTEX);
+        vertexInfo->addVertexAttribute(index, 0, VK_FORMAT_R32G32_SFLOAT, offsetof(ColorVertex, position));
+        vertexInfo->addVertexAttribute(index, 1, VK_FORMAT_R32G32B32_SFLOAT, offsetof(ColorVertex, color));
+    }
+};
+
+
+std::vector<ColorVertex> const triangleVertices = {
+    {{ 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
+};
+
+
 class Application {
 private:
     static utils::Logger log;
@@ -186,6 +205,8 @@ private:
         config.addShaderStage(this->vkVertexShaderModule->getHandle(), VK_SHADER_STAGE_VERTEX_BIT);
         config.addShaderStage(this->vkFragmentShaderModule->getHandle(), VK_SHADER_STAGE_FRAGMENT_BIT);
 
+        ColorVertex::addToConfig(&config.vertexInfo);
+
         return config;
     }
 
@@ -281,6 +302,11 @@ public:
             renderCompleteSemaphores[i] = this->vkDevice->createSemaphore();
             inFlightFences[i] = this->vkDevice->createFence(VK_FENCE_CREATE_SIGNALED_BIT);
         }
+
+        std::shared_ptr<utils::vulkan::VertexBuffer> vertexBuffer = this->vkDevice->createVertexBuffer(
+            triangleVertices.size() * sizeof(ColorVertex), VK_SHARING_MODE_EXCLUSIVE);
+
+        VkMemoryRequirements memoryRequirements = vertexBuffer->getMemoryRequirements();
 
         while (!glfwWindow->shouldClose()) {
             glfwPollEvents();

@@ -158,6 +158,11 @@ namespace utils::vulkan {
     }
 
 
+    std::shared_ptr<VertexBuffer> Device::createVertexBuffer(uint64_t const size, VkSharingMode const sharingMode) const {
+        return std::make_shared<VertexBuffer>(this->vkHandle, size, sharingMode);
+    }
+
+
     void Device::waitIdle() const {
         if (vkDeviceWaitIdle(this->vkHandle->vk) != VK_SUCCESS) {
             throw std::runtime_error("Error waiting for device idle.");

@@ -11,6 +11,7 @@
 #include "utils/vulkan/command_pool.hpp"
 #include "utils/vulkan/semaphore.hpp"
 #include "utils/vulkan/fence.hpp"
+#include "utils/vulkan/vertex_buffer.hpp"
 
 #include "utils/misc/logging.hpp"
 
@@ -127,6 +128,14 @@ namespace utils::vulkan {
          * @return Shared pointer to new fence object.
          */
         std::shared_ptr<Fence> createFence(VkFenceCreateFlagBits const flags) const;
+
+        /**
+         * @brief Create a new vertex buffer object.
+         * @param size Size of the buffer in bytes.
+         * @param sharingMode Sharing mode for the buffer (e.g. VK_SHARING_MODE_EXCLUSIVE)
+         * @return Shared pointer to new vertex buffer object.
+         */
+        std::shared_ptr<VertexBuffer> createVertexBuffer(uint64_t const size, VkSharingMode const sharingMode) const;
 
         /**
          * @brief Wait for device to be idle.

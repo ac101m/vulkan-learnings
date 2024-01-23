@@ -32,7 +32,8 @@ set(UTILS_VULKAN_SOURCE_SET
     src/utils/vulkan/command_pool.cpp
     src/utils/vulkan/command_buffer.cpp
     src/utils/vulkan/semaphore.cpp
-    src/utils/vulkan/fence.cpp)
+    src/utils/vulkan/fence.cpp
+    src/utils/vulkan/vertex_buffer.cpp)
 
 set(UTILS_MISC_SOURCE_SET
     src/utils/misc/logging.cpp
