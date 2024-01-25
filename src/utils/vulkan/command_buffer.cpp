@@ -108,4 +108,11 @@ namespace utils::vulkan {
     ) {
         vkCmdDraw(this->vk, vertexCount, instanceCount, firstVertex, firstInstance);
     }
+
+
+    void CommandBuffer::bindVertexBuffer(std::shared_ptr<VertexBuffer> const& vertexBuffer) {
+        VkBuffer vertexBuffers[] = {vertexBuffer->getHandle()->vk};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(this->vk, 0, 1, vertexBuffers, offsets);
+    }
 }

@@ -30,4 +30,38 @@ namespace utils::vulkan {
         vkGetBufferMemoryRequirements(this->vkDeviceHandle->vk, this->vkHandle->vk, &requirements);
         return requirements;
     }
+
+
+    void VertexBuffer::bindMemory(std::shared_ptr<DeviceMemory> const& deviceMemory, uint64_t const offset) {
+        auto const requirements = this->getMemoryRequirements();
+
+        if (offset % requirements.alignment != 0) {
+            throw std::runtime_error("Unable to bind vertex buffer to device memory, offset is not aligned.");
+        }
+
+        if (offset + requirements.size > deviceMemory->size) {
+            throw std::runtime_error("Unable to bind vertex buffer to device memory, memory is too small.");
+        }
+
+        this->vkDeviceMemory = deviceMemory->getHandle();
+        this->memoryOffset = offset;
+        this->memorySize = requirements.size;
+
+        if (vkBindBufferMemory(this->vkDeviceHandle->vk, this->vkHandle->vk, this->vkDeviceMemory->vk, offset) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to bind vertex buffer memory.");
+        }
+    }
+
+
+    void VertexBuffer::mapMemory() {
+        if (vkMapMemory(this->vkDeviceHandle->vk, this->vkDeviceMemory->vk, this->memoryOffset, this->memorySize, 0, &this->data) != VK_SUCCESS) {
+            throw std::runtime_error("Failed to map vertex buffer memory.");
+        }
+    }
+
+
+    void VertexBuffer::unmapMemory() {
+        vkUnmapMemory(this->vkDeviceHandle->vk, this->vkDeviceMemory->vk);
+        this->data = nullptr;
+    }
 }

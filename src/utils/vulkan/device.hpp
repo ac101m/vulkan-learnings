@@ -12,6 +12,7 @@
 #include "utils/vulkan/semaphore.hpp"
 #include "utils/vulkan/fence.hpp"
 #include "utils/vulkan/vertex_buffer.hpp"
+#include "utils/vulkan/device_memory.hpp"
 
 #include "utils/misc/logging.hpp"
 
@@ -30,6 +31,7 @@ namespace utils::vulkan {
         static utils::Logger log;
 
         std::shared_ptr<InstanceHandle> vkInstanceHandle;
+        VkPhysicalDevice const vkPhysicalDevice;
 
         std::map<std::string, std::shared_ptr<Queue>> queueMap;
 
@@ -136,6 +138,14 @@ namespace utils::vulkan {
          * @return Shared pointer to new vertex buffer object.
          */
         std::shared_ptr<VertexBuffer> createVertexBuffer(uint64_t const size, VkSharingMode const sharingMode) const;
+
+        /**
+         * @brief Allocate device memory.
+         * @param memoryType Type of memory to allocate.
+         * @param memoryQuantity Quantity of memory to allocate.
+         * @return Shared pointer to new device memory object.
+         */
+        std::shared_ptr<DeviceMemory> allocateDeviceMemory(uint32_t const memoryType, uint64_t const memoryQuantity) const;
 
         /**
          * @brief Wait for device to be idle.

@@ -32,7 +32,7 @@ struct ColorVertex {
 
 
 std::vector<ColorVertex> const triangleVertices = {
-    {{ 0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{ 0.0f, -0.5f}, {1.0f, 1.0f, 1.0f}},
     {{ 0.5f,  0.5f}, {0.0f, 1.0f, 0.0f}},
     {{-0.5f,  0.5f}, {0.0f, 0.0f, 1.0f}}
 };
@@ -306,7 +306,20 @@ public:
         std::shared_ptr<utils::vulkan::VertexBuffer> vertexBuffer = this->vkDevice->createVertexBuffer(
             triangleVertices.size() * sizeof(ColorVertex), VK_SHARING_MODE_EXCLUSIVE);
 
-        VkMemoryRequirements memoryRequirements = vertexBuffer->getMemoryRequirements();
+        auto const memoryRequirements = vertexBuffer->getMemoryRequirements();
+
+        uint32_t const memoryType = this->vkPhysicalDevice->selectMemoryType(
+            memoryRequirements.memoryTypeBits,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+        std::shared_ptr<utils::vulkan::DeviceMemory> vertexBufferMemory = this->vkDevice->allocateDeviceMemory(
+            memoryType, memoryRequirements.size);
+
+        vertexBuffer->bindMemory(vertexBufferMemory, 0);
+
+        vertexBuffer->mapMemory();
+        memcpy(vertexBuffer->getMappedMemory(), triangleVertices.data(), vertexBuffer->getMemorySize());
+        vertexBuffer->unmapMemory();
 
         while (!glfwWindow->shouldClose()) {
             glfwPollEvents();
@@ -346,7 +359,8 @@ public:
             commandBuffer->bindGraphicsPipeline(this->vkGraphicsPipeline);
             commandBuffer->setViewport(this->vkSwapChain->config.imageExtent);
             commandBuffer->setScissor({0, 0}, this->vkSwapChain->config.imageExtent);
-            commandBuffer->draw(3, 1, 0, 0);
+            commandBuffer->bindVertexBuffer(vertexBuffer);
+            commandBuffer->draw(triangleVertices.size(), 1, 0, 0);
             commandBuffer->endRenderPass();
             commandBuffer->end();
 

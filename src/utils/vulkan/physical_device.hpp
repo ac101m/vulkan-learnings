@@ -102,6 +102,20 @@ namespace utils::vulkan {
          * @return SwapChainSupportInfo object.
          */
         SwapChainSupportInfo getSwapChainSupportInfo(std::shared_ptr<Surface> const& surface) const;
+
+        /**
+         * @brief Get information about supported memory for physical devices.
+         * @return Physical device memory properties.
+         */
+        VkPhysicalDeviceMemoryProperties getMemoryProperties() const;
+
+        /**
+         * @brief Select a memory type from available memory types.
+         * @param typeMask Bitmask expressing the set of acceptable types.
+         * @param additionalFlags Additional memory flags (e.g. VK_MEMORY_PROPERTY_HOST_COHERENT_BIT).
+         * @return memory type index.
+         */
+        uint32_t selectMemoryType(uint32_t const typeMask, VkMemoryPropertyFlags const additionalFlags) const;
     };
 
 }

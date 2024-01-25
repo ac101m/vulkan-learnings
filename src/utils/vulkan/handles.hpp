@@ -333,4 +333,23 @@ namespace utils::vulkan {
             vkDestroyBuffer(this->vkDeviceHandle->vk, this->vk, nullptr);
         }
     };
+
+
+    /**
+     * @brief Class for managing lifetime of VkDeviceMemory objects.
+     */
+    class DeviceMemoryHandle {
+    private:
+        std::shared_ptr<DeviceHandle> const vkDeviceHandle;
+
+    public:
+        VkDeviceMemory_T * vk;
+
+        DeviceMemoryHandle(std::shared_ptr<DeviceHandle> const& vkDeviceHandle) :
+            vkDeviceHandle(vkDeviceHandle) {}
+
+        ~DeviceMemoryHandle() {
+            vkFreeMemory(this->vkDeviceHandle->vk, this->vk, nullptr);
+        }
+    };
 }

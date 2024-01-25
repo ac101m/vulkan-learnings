@@ -34,7 +34,8 @@ namespace utils::vulkan {
         std::vector<std::string> const& validationLayerNames
     ) :
         HandleWrapper<DeviceHandle>(std::make_shared<DeviceHandle>()),
-        vkInstanceHandle(vkInstanceHandle)
+        vkInstanceHandle(vkInstanceHandle),
+        vkPhysicalDevice(physicalDevice)
     {
         INFO(log) << "Creating logical device." << std::endl;
 
@@ -160,6 +161,11 @@ namespace utils::vulkan {
 
     std::shared_ptr<VertexBuffer> Device::createVertexBuffer(uint64_t const size, VkSharingMode const sharingMode) const {
         return std::make_shared<VertexBuffer>(this->vkHandle, size, sharingMode);
+    }
+
+
+    std::shared_ptr<DeviceMemory> Device::allocateDeviceMemory(uint32_t const memoryType, uint64_t const memoryQuantity) const {
+        return std::make_shared<DeviceMemory>(this->vkHandle, memoryType, memoryQuantity);
     }
 
 

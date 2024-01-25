@@ -14,7 +14,7 @@ namespace utils::vulkan {
         std::vector<VkVertexInputAttributeDescription> attributes;
 
         /**
-         * @brief Add a vertex adescription to the vertex info.
+         * @brief Add a vertex description to the vertex info.
          * @param size Size of the vertex data in bytes.
          * @param inputRate Either VK_VERTEX_INPUT_RATE_VERTEX or VK_VERTEX_INPUT_RATE_INSTANCE
          * @return Index of the newly created type.
@@ -24,7 +24,13 @@ namespace utils::vulkan {
             VkVertexInputRate const inputRate
         ) {
             uint32_t const index = vertexTypes.size();
-            vertexTypes.push_back({index, size, inputRate});
+
+            VkVertexInputBindingDescription vertexType {};
+            vertexType.binding = index;
+            vertexType.stride = size;
+            vertexType.inputRate = inputRate;
+
+            vertexTypes.push_back(vertexType);
             return index;
         }
 
@@ -45,7 +51,13 @@ namespace utils::vulkan {
                 throw std::runtime_error("Failed to add vertex attribute: Vertex type index out of range.");
             }
 
-            attributes.push_back({vertexTypeIndex, shaderLocation, format, offset});
+            VkVertexInputAttributeDescription vertexAttribute {};
+            vertexAttribute.binding = vertexTypeIndex;
+            vertexAttribute.location = shaderLocation;
+            vertexAttribute.format = format;
+            vertexAttribute.offset = offset;
+
+            attributes.push_back(vertexAttribute);
         }
     };
 

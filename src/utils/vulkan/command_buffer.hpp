@@ -5,6 +5,7 @@
 #include "utils/vulkan/render_pass.hpp"
 #include "utils/vulkan/frame_buffer.hpp"
 #include "utils/vulkan/graphics_pipeline.hpp"
+#include "utils/vulkan/vertex_buffer.hpp"
 
 
 namespace utils::vulkan {
@@ -86,6 +87,12 @@ namespace utils::vulkan {
          * @param firstInstance Offset into the instance buffer.
          */
         void draw(uint32_t const vertexCount, uint32_t const instanceCount, uint32_t const firstVertex, uint32_t const firstInstance);
+
+        /**
+         * @Brief Bind a single vertex buffer.
+         * @param vertexBuffer Pointer to vertex buffer.
+         */
+        void bindVertexBuffer(std::shared_ptr<VertexBuffer> const& vertexBuffer);
     };
 
 }

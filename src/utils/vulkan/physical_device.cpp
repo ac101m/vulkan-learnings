@@ -197,4 +197,24 @@ namespace utils::vulkan {
 
         return SwapChainSupportInfo(capabilities, surfaceFormats, presentModes);
     }
+
+
+    VkPhysicalDeviceMemoryProperties PhysicalDevice::getMemoryProperties() const {
+        VkPhysicalDeviceMemoryProperties properties;
+        vkGetPhysicalDeviceMemoryProperties(this->vkPhysicalDevice, &properties);
+        return properties;
+    }
+
+
+    uint32_t PhysicalDevice::selectMemoryType(uint32_t const typeMask, VkMemoryPropertyFlags const additionalFlags) const {
+        auto const properties = getMemoryProperties();
+
+        for (uint32_t i = 0; i < properties.memoryTypeCount; i++) {
+            if ((typeMask & (1 << i)) && (properties.memoryTypes[i].propertyFlags & additionalFlags)) {
+                return i;
+            }
+        }
+
+        throw std::runtime_error("Unable to find suitable memory type.");
+    }
 }
