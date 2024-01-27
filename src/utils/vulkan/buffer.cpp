@@ -1,13 +1,14 @@
-#include "utils/vulkan/vertex_buffer.hpp"
+#include "utils/vulkan/buffer.hpp"
 
 #include "vulkan/vulkan.h"
 
 
 namespace utils::vulkan {
 
-    VertexBuffer::VertexBuffer(
+    Buffer::Buffer(
         std::shared_ptr<DeviceHandle> const& vkDeviceHandle,
         uint64_t const size,
+        VkMemoryPropertyFlags const usageFlags,
         VkSharingMode const sharingMode
     ) :
         HandleWrapper<BufferHandle>(std::make_shared<BufferHandle>(vkDeviceHandle)),
@@ -25,14 +26,14 @@ namespace utils::vulkan {
     }
 
 
-    VkMemoryRequirements VertexBuffer::getMemoryRequirements() const {
+    VkMemoryRequirements Buffer::getMemoryRequirements() const {
         VkMemoryRequirements requirements;
         vkGetBufferMemoryRequirements(this->vkDeviceHandle->vk, this->vkHandle->vk, &requirements);
         return requirements;
     }
 
 
-    void VertexBuffer::bindMemory(std::shared_ptr<DeviceMemory> const& deviceMemory, uint64_t const offset) {
+    void Buffer::bindMemory(std::shared_ptr<DeviceMemory> const& deviceMemory, uint64_t const offset) {
         auto const requirements = this->getMemoryRequirements();
 
         if (offset % requirements.alignment != 0) {
@@ -53,14 +54,14 @@ namespace utils::vulkan {
     }
 
 
-    void VertexBuffer::mapMemory() {
+    void Buffer::mapMemory() {
         if (vkMapMemory(this->vkDeviceHandle->vk, this->vkDeviceMemory->vk, this->memoryOffset, this->memorySize, 0, &this->data) != VK_SUCCESS) {
             throw std::runtime_error("Failed to map vertex buffer memory.");
         }
     }
 
 
-    void VertexBuffer::unmapMemory() {
+    void Buffer::unmapMemory() {
         vkUnmapMemory(this->vkDeviceHandle->vk, this->vkDeviceMemory->vk);
         this->data = nullptr;
     }

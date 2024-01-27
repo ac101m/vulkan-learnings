@@ -9,7 +9,7 @@
 
 namespace utils::vulkan {
 
-    class VertexBuffer : public HandleWrapper<BufferHandle> {
+    class Buffer : public HandleWrapper<BufferHandle> {
     private:
         static utils::Logger log;
 
@@ -23,9 +23,10 @@ namespace utils::vulkan {
         void * data = nullptr;
 
     public:
-        VertexBuffer(
+        Buffer(
             std::shared_ptr<DeviceHandle> const& vkDeviceHandle,
             uint64_t const size,
+            VkBufferUsageFlags const usageFlags,
             VkSharingMode const sharingMode);
 
         /**

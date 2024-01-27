@@ -110,9 +110,37 @@ namespace utils::vulkan {
     }
 
 
-    void CommandBuffer::bindVertexBuffer(std::shared_ptr<VertexBuffer> const& vertexBuffer) {
+    void CommandBuffer::bindVertexBuffer(std::shared_ptr<Buffer> const& vertexBuffer) {
         VkBuffer vertexBuffers[] = {vertexBuffer->getHandle()->vk};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(this->vk, 0, 1, vertexBuffers, offsets);
+    }
+
+
+    void CommandBuffer::copyBuffer(
+        std::shared_ptr<Buffer> const& sourceBuffer,
+        std::shared_ptr<Buffer> const& destinationBuffer,
+        uint64_t const sourceOffset,
+        uint64_t const destinationOffset,
+        uint64_t const size
+    ) {
+        VkBufferCopy copyRegion {};
+        copyRegion.srcOffset = sourceOffset;
+        copyRegion.dstOffset = destinationOffset;
+        copyRegion.size = size;
+
+        vkCmdCopyBuffer(this->vk, sourceBuffer->getHandle()->vk, destinationBuffer->getHandle()->vk, 1, &copyRegion);
+    }
+
+
+    void CommandBuffer::copyBuffer(
+        std::shared_ptr<Buffer> const& sourceBuffer,
+        std::shared_ptr<Buffer> const& destinationBuffer
+    ) {
+        if (sourceBuffer->getMemorySize() != destinationBuffer->getMemorySize()) {
+            throw std::runtime_error("Unable to perform full buffer copy, source and destination buffers differ in size.");
+        }
+
+        this->copyBuffer(sourceBuffer, destinationBuffer, 0, 0, sourceBuffer->getMemorySize());
     }
 }

@@ -33,7 +33,7 @@ set(UTILS_VULKAN_SOURCE_SET
     src/utils/vulkan/command_buffer.cpp
     src/utils/vulkan/semaphore.cpp
     src/utils/vulkan/fence.cpp
-    src/utils/vulkan/vertex_buffer.cpp
+    src/utils/vulkan/buffer.cpp
     src/utils/vulkan/device_memory.cpp)
 
 set(UTILS_MISC_SOURCE_SET

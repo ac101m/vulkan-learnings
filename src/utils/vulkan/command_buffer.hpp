@@ -5,7 +5,7 @@
 #include "utils/vulkan/render_pass.hpp"
 #include "utils/vulkan/frame_buffer.hpp"
 #include "utils/vulkan/graphics_pipeline.hpp"
-#include "utils/vulkan/vertex_buffer.hpp"
+#include "utils/vulkan/buffer.hpp"
 
 
 namespace utils::vulkan {
@@ -92,7 +92,31 @@ namespace utils::vulkan {
          * @Brief Bind a single vertex buffer.
          * @param vertexBuffer Pointer to vertex buffer.
          */
-        void bindVertexBuffer(std::shared_ptr<VertexBuffer> const& vertexBuffer);
+        void bindVertexBuffer(std::shared_ptr<Buffer> const& vertexBuffer);
+
+        /**
+         * @brief Copy a subsection of one buffer to a subsection of another buffer.
+         * @param sourceBuffer Shared pointer to the source buffer.
+         * @param destinationBuffer Shared pointer to destination buffer.
+         * @param sourceOffset Offset to start copying from the source buffer.
+         * @param destinationOffset Offset to start copying to the destination buffer.
+         * @param size Number of bytes to copy.
+         */
+        void copyBuffer(
+            std::shared_ptr<Buffer> const& sourceBuffer,
+            std::shared_ptr<Buffer> const& destinationBuffer,
+            uint64_t const sourceOffset,
+            uint64_t const destinationOffset,
+            uint64_t const size);
+
+        /**
+         * @brief Copy the contents of one buffer to another buffer of equal size.
+         * @param sourceBuffer Shared pointer to the source buffer.
+         * @param destinationBuffer Shared pointer to destination buffer.
+         */
+        void copyBuffer(
+            std::shared_ptr<Buffer> const& sourceBuffer,
+            std::shared_ptr<Buffer> const& destinationBuffer);
     };
 
 }

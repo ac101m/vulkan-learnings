@@ -159,8 +159,8 @@ namespace utils::vulkan {
     }
 
 
-    std::shared_ptr<VertexBuffer> Device::createVertexBuffer(uint64_t const size, VkSharingMode const sharingMode) const {
-        return std::make_shared<VertexBuffer>(this->vkHandle, size, sharingMode);
+    std::shared_ptr<Buffer> Device::createBuffer(uint64_t const size, VkBufferUsageFlags const usageFlags, VkSharingMode const sharingMode) const {
+        return std::make_shared<Buffer>(this->vkHandle, size, usageFlags, sharingMode);
     }
 
 

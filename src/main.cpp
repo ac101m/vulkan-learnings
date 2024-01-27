@@ -61,6 +61,9 @@ private:
     std::shared_ptr<utils::vulkan::GraphicsPipeline> vkGraphicsPipeline;
     std::shared_ptr<utils::vulkan::CommandPool> vkCommandPool;
 
+    std::shared_ptr<utils::vulkan::Buffer> vkHostVertexBuffer;
+    std::shared_ptr<utils::vulkan::Buffer> vkDeviceVertexBuffer;
+
     std::vector<std::string> const debugValidationLayers = {
         "VK_LAYER_KHRONOS_validation"
     };
@@ -246,6 +249,43 @@ private:
     }
 
 
+    void initializeVertexBuffer() {
+        this->vkHostVertexBuffer = this->vkDevice->createBuffer(
+            triangleVertices.size() * sizeof(ColorVertex),
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_SHARING_MODE_EXCLUSIVE);
+
+        this->vkDeviceVertexBuffer = this->vkDevice->createBuffer(
+            triangleVertices.size() * sizeof(ColorVertex),
+            VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+            VK_SHARING_MODE_EXCLUSIVE);
+
+        auto const hostBufferMemoryRequirements = this->vkHostVertexBuffer->getMemoryRequirements();
+        auto const deviceBufferMemoryRequirements = this->vkDeviceVertexBuffer->getMemoryRequirements();
+
+        uint32_t const hostBufferMemoryType = this->vkPhysicalDevice->selectMemoryType(
+            hostBufferMemoryRequirements.memoryTypeBits,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+        uint32_t const deviceBufferMemoryType = this->vkPhysicalDevice->selectMemoryType(
+            deviceBufferMemoryRequirements.memoryTypeBits,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        std::shared_ptr<utils::vulkan::DeviceMemory> hostBufferMemory = this->vkDevice->allocateDeviceMemory(
+            hostBufferMemoryType, hostBufferMemoryRequirements.size);
+
+        std::shared_ptr<utils::vulkan::DeviceMemory> deviceBufferMemory = this->vkDevice->allocateDeviceMemory(
+            deviceBufferMemoryType, deviceBufferMemoryRequirements.size);
+
+        this->vkHostVertexBuffer->bindMemory(hostBufferMemory, 0);
+        this->vkDeviceVertexBuffer->bindMemory(deviceBufferMemory, 0);
+
+        this->vkHostVertexBuffer->mapMemory();
+        memcpy(this->vkHostVertexBuffer->getMappedMemory(), triangleVertices.data(), this->vkHostVertexBuffer->getMemorySize());
+        this->vkHostVertexBuffer->unmapMemory();
+    }
+
+
 public:
     Application(uint32_t const windowWidth, uint32_t const windowHeight, bool doDebug) {
         auto const validationLayers = doDebug ? debugValidationLayers : std::vector<std::string>(0);
@@ -289,6 +329,23 @@ public:
     void run() {
         INFO(log) << "Main loop starting." << std::endl;
 
+        initializeVertexBuffer();
+
+        std::shared_ptr<utils::vulkan::CommandBuffer> initCommandBuffer =
+            this->vkCommandPool->allocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+        initCommandBuffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+        initCommandBuffer->copyBuffer(this->vkHostVertexBuffer, this->vkDeviceVertexBuffer);
+        initCommandBuffer->end();
+
+        std::shared_ptr<utils::vulkan::Fence> uploadCompleteFence = this->vkDevice->createFence();
+
+        this->vkGraphicsQueue->submit(
+            {}, {}, {}, {initCommandBuffer},
+            uploadCompleteFence);
+
+        uploadCompleteFence->wait();
+
         unsigned contextIndex = 0;
 
         std::vector<std::shared_ptr<utils::vulkan::CommandBuffer>> commandBuffers(MAX_FRAMES_IN_FLIGHT);
@@ -302,24 +359,6 @@ public:
             renderCompleteSemaphores[i] = this->vkDevice->createSemaphore();
             inFlightFences[i] = this->vkDevice->createFence(VK_FENCE_CREATE_SIGNALED_BIT);
         }
-
-        std::shared_ptr<utils::vulkan::VertexBuffer> vertexBuffer = this->vkDevice->createVertexBuffer(
-            triangleVertices.size() * sizeof(ColorVertex), VK_SHARING_MODE_EXCLUSIVE);
-
-        auto const memoryRequirements = vertexBuffer->getMemoryRequirements();
-
-        uint32_t const memoryType = this->vkPhysicalDevice->selectMemoryType(
-            memoryRequirements.memoryTypeBits,
-            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-        std::shared_ptr<utils::vulkan::DeviceMemory> vertexBufferMemory = this->vkDevice->allocateDeviceMemory(
-            memoryType, memoryRequirements.size);
-
-        vertexBuffer->bindMemory(vertexBufferMemory, 0);
-
-        vertexBuffer->mapMemory();
-        memcpy(vertexBuffer->getMappedMemory(), triangleVertices.data(), vertexBuffer->getMemorySize());
-        vertexBuffer->unmapMemory();
 
         while (!glfwWindow->shouldClose()) {
             glfwPollEvents();
@@ -359,7 +398,7 @@ public:
             commandBuffer->bindGraphicsPipeline(this->vkGraphicsPipeline);
             commandBuffer->setViewport(this->vkSwapChain->config.imageExtent);
             commandBuffer->setScissor({0, 0}, this->vkSwapChain->config.imageExtent);
-            commandBuffer->bindVertexBuffer(vertexBuffer);
+            commandBuffer->bindVertexBuffer(this->vkDeviceVertexBuffer);
             commandBuffer->draw(triangleVertices.size(), 1, 0, 0);
             commandBuffer->endRenderPass();
             commandBuffer->end();
