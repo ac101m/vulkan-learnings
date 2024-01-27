@@ -17,7 +17,7 @@ namespace utils::vulkan {
         VkBufferCreateInfo createInfo {};
         createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         createInfo.size = size;
-        createInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        createInfo.usage = usageFlags;
         createInfo.sharingMode = sharingMode;
 
         if (vkCreateBuffer(this->vkDeviceHandle->vk, &createInfo, nullptr, &this->vkHandle->vk) != VK_SUCCESS) {
