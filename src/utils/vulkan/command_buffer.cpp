@@ -110,10 +110,26 @@ namespace utils::vulkan {
     }
 
 
+    void CommandBuffer::drawIndexed(
+        uint32_t const indexCount,
+        uint32_t const instanceCount,
+        uint32_t const firstIndex,
+        int32_t const vertexOffset,
+        uint32_t const firstInstance
+    ) {
+        vkCmdDrawIndexed(this->vk, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+    }
+
+
     void CommandBuffer::bindVertexBuffer(std::shared_ptr<Buffer> const& vertexBuffer) {
         VkBuffer vertexBuffers[] = {vertexBuffer->getHandle()->vk};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(this->vk, 0, 1, vertexBuffers, offsets);
+    }
+
+
+    void CommandBuffer::bindIndexBuffer(std::shared_ptr<Buffer> const& indexBuffer, VkIndexType const indexType) {
+        vkCmdBindIndexBuffer(this->vk, indexBuffer->getHandle()->vk, 0, indexType);
     }
 
 

@@ -86,13 +86,39 @@ namespace utils::vulkan {
          * @param firstVertex Offset into the vertex buffer.
          * @param firstInstance Offset into the instance buffer.
          */
-        void draw(uint32_t const vertexCount, uint32_t const instanceCount, uint32_t const firstVertex, uint32_t const firstInstance);
+        void draw(
+            uint32_t const vertexCount,
+            uint32_t const instanceCount,
+            uint32_t const firstVertex,
+            uint32_t const firstInstance);
 
         /**
-         * @Brief Bind a single vertex buffer.
+         * @brief Draw some stuff! (indexed)
+         * @param indexCount The number of vertices to draw.
+         * @param instanceCount The number of instances to draw.
+         * @param firstIndex Base index within the index buffer.
+         * @param vertexOffset An offset into the vertex buffer, added to each index.
+         * @param firstInstance
+         */
+        void drawIndexed(
+            uint32_t const indexCount,
+            uint32_t const instanceCount,
+            uint32_t const firstIndex,
+            int32_t const vertexOffset,
+            uint32_t const firstInstance);
+
+        /**
+         * @brief Bind a single vertex buffer.
          * @param vertexBuffer Pointer to vertex buffer.
          */
         void bindVertexBuffer(std::shared_ptr<Buffer> const& vertexBuffer);
+
+        /**
+         * @brief Bind an index buffer.
+         * @param indexBuffer Shared pointer to index buffer.
+         * @param indexType The datatype of the indices.
+         */
+        void bindIndexBuffer(std::shared_ptr<Buffer> const& indexBuffer, VkIndexType const indexType);
 
         /**
          * @brief Copy a subsection of one buffer to a subsection of another buffer.
