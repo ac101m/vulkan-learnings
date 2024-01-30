@@ -352,4 +352,42 @@ namespace utils::vulkan {
             vkFreeMemory(this->vkDeviceHandle->vk, this->vk, nullptr);
         }
     };
+
+
+    /**
+     * @brief Class for managing lifetime of VkDescriptorSetLayout objects.
+     */
+    class DescriptorSetLayoutHandle {
+    private:
+        std::shared_ptr<DeviceHandle> const vkDeviceHandle;
+
+    public:
+        VkDescriptorSetLayout_T * vk;
+
+        DescriptorSetLayoutHandle(std::shared_ptr<DeviceHandle> const& vkDeviceHandle) :
+            vkDeviceHandle(vkDeviceHandle) {}
+
+        ~DescriptorSetLayoutHandle() {
+            vkDestroyDescriptorSetLayout(this->vkDeviceHandle->vk, this->vk, nullptr);
+        }
+    };
+
+
+    /**
+     * @brief Class for managing the lifetime of VkDescriptorPool objects.
+     */
+    class DescriptorPoolHandle {
+    private:
+        std::shared_ptr<DeviceHandle> const vkDeviceHandle;
+
+    public:
+        VkDescriptorPool_T * vk;
+
+        DescriptorPoolHandle(std::shared_ptr<DeviceHandle> const& vkDeviceHandle) :
+            vkDeviceHandle(vkDeviceHandle) {}
+
+        ~DescriptorPoolHandle() {
+            vkDestroyDescriptorPool(this->vkDeviceHandle->vk, this->vk, nullptr);
+        }
+    };
 }

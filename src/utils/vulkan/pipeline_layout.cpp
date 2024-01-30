@@ -16,10 +16,15 @@ namespace utils::vulkan {
     {
         INFO(log) << "Creating pipeline layout." << std::endl;
 
-        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+        VkDescriptorSetLayout descriptorSets[config.descriptorSets.size()];
+        for (unsigned i = 0; i < config.descriptorSets.size(); i++) {
+            descriptorSets[i] = config.descriptorSets[i]->getHandle()->vk;
+        }
+
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo {};
         pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipelineLayoutInfo.setLayoutCount = 0;              // Optional/Todo
-        pipelineLayoutInfo.pSetLayouts = nullptr;           // Optional/Todo
+        pipelineLayoutInfo.setLayoutCount = static_cast<uint32_t>(config.descriptorSets.size());
+        pipelineLayoutInfo.pSetLayouts = descriptorSets;
         pipelineLayoutInfo.pushConstantRangeCount = 0;      // Optional/Todo
         pipelineLayoutInfo.pPushConstantRanges = nullptr;   // Optional/Todo
 

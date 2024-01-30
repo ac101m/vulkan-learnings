@@ -6,6 +6,8 @@
 #include "utils/vulkan/frame_buffer.hpp"
 #include "utils/vulkan/graphics_pipeline.hpp"
 #include "utils/vulkan/buffer.hpp"
+#include "utils/vulkan/descriptor_set.hpp"
+#include "utils/vulkan/pipeline_layout.hpp"
 
 
 namespace utils::vulkan {
@@ -106,6 +108,17 @@ namespace utils::vulkan {
             uint32_t const firstIndex,
             int32_t const vertexOffset,
             uint32_t const firstInstance);
+
+        /**
+         * @brief Bind a descriptor set.
+         * @param descriptorSet Shared pointer to descriptor set to bind.
+         * @param pipelineLayout Shared pointer to pipeline layout object.
+         * @param bindPoint Bind point for the (e.g. VK_PIPELINE_BIND_POINT_GRAPHICS)
+         */
+        void bindDescriptorSet(
+            std::shared_ptr<DescriptorSet> const& descriptorSet,
+            std::shared_ptr<PipelineLayout> const& pipelineLayout,
+            VkPipelineBindPoint const bindPoint);
 
         /**
          * @brief Bind a single vertex buffer.

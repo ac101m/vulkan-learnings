@@ -34,7 +34,10 @@ set(UTILS_VULKAN_SOURCE_SET
     src/utils/vulkan/semaphore.cpp
     src/utils/vulkan/fence.cpp
     src/utils/vulkan/buffer.cpp
-    src/utils/vulkan/device_memory.cpp)
+    src/utils/vulkan/device_memory.cpp
+    src/utils/vulkan/descriptor_set_layout.cpp
+    src/utils/vulkan/descriptor_pool.cpp
+    src/utils/vulkan/descriptor_set.cpp)
 
 set(UTILS_MISC_SOURCE_SET
     src/utils/misc/logging.cpp

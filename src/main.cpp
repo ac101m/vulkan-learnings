@@ -9,6 +9,8 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
 
@@ -42,6 +44,13 @@ std::vector<ColorVertex> const squareVertices = {
 std::vector<uint16_t> squareIndices = {0, 1, 2, 2, 3, 0};
 
 
+struct UniformBufferObject {
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 projection;
+};
+
+
 class Application {
 private:
     static utils::Logger log;
@@ -60,10 +69,12 @@ private:
 
     std::shared_ptr<utils::vulkan::ShaderModule> vkVertexShaderModule;
     std::shared_ptr<utils::vulkan::ShaderModule> vkFragmentShaderModule;
+    std::shared_ptr<utils::vulkan::DescriptorSetLayout> vkDescriptorSetLayout;
     std::shared_ptr<utils::vulkan::PipelineLayout> vkPipelineLayout;
     std::shared_ptr<utils::vulkan::RenderPass> vkRenderPass;
     std::shared_ptr<utils::vulkan::GraphicsPipeline> vkGraphicsPipeline;
     std::shared_ptr<utils::vulkan::CommandPool> vkCommandPool;
+    std::shared_ptr<utils::vulkan::DescriptorPool> vkDescriptorPool;
 
     std::shared_ptr<utils::vulkan::Buffer> vkVertexBuffer;
     std::shared_ptr<utils::vulkan::Buffer> vkIndexBuffer;
@@ -206,6 +217,24 @@ private:
     }
 
 
+    utils::vulkan::DescriptorSetLayoutConfig createDescriptorSetLayoutConfig() {
+        utils::vulkan::DescriptorSetLayoutConfig config;
+        config.addDescriptor(0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT);
+        return config;
+    }
+
+
+    utils::vulkan::PipelineLayoutConfig createPipelineLayoutConfig() {
+        if (this->vkDescriptorSetLayout == nullptr) {
+            throw std::runtime_error("Cannot create pipeline layout config, descriptor set layout is not initialized.");
+        }
+
+        utils::vulkan::PipelineLayoutConfig config;
+        config.addDescriptorSet(this->vkDescriptorSetLayout);
+        return config;
+    }
+
+
     utils::vulkan::GraphicsPipelineConfig createGraphicsPipelineConfig() {
         auto config = utils::vulkan::GraphicsPipelineConfig();
 
@@ -221,6 +250,13 @@ private:
     utils::vulkan::CommandPoolConfig createCommandPoolConfig() {
         auto config = utils::vulkan::CommandPoolConfig(this->vkGraphicsQueue->queueFamilyIndex);
         config.flagBits = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        return config;
+    }
+
+
+    utils::vulkan::DescriptorPoolConfig createDescriptorPoolConfig() {
+        utils::vulkan::DescriptorPoolConfig config(MAX_FRAMES_IN_FLIGHT);
+        config.addPool(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, MAX_FRAMES_IN_FLIGHT);
         return config;
     }
 
@@ -391,7 +427,8 @@ public:
 
         this->vkVertexShaderModule = this->vkDevice->createShaderModule("data/shaders/triangle/vertex.spv");
         this->vkFragmentShaderModule = this->vkDevice->createShaderModule("data/shaders/triangle/fragment.spv");
-        this->vkPipelineLayout = this->vkDevice->createPipelineLayout({});
+        this->vkDescriptorSetLayout = this->vkDevice->createDescriptorSetLayout(createDescriptorSetLayoutConfig());
+        this->vkPipelineLayout = this->vkDevice->createPipelineLayout(createPipelineLayoutConfig());
         this->vkRenderPass = this->vkDevice->createRenderPass(createRenderPassConfig());
 
         this->vkGraphicsPipeline = this->vkDevice->createGraphicsPipeline(
@@ -406,16 +443,38 @@ public:
         }
 
         this->vkCommandPool = this->vkDevice->createCommandPool(createCommandPoolConfig());
+        this->vkDescriptorPool = this->vkDevice->createDescriptorPool(createDescriptorPoolConfig());
+    }
+
+
+    void updateUniformBuffer(std::shared_ptr<utils::vulkan::Buffer> const& uniformBuffer) {
+        static auto const startTime = std::chrono::high_resolution_clock::now();
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+        uint32_t const windowWidth = this->vkSwapChain->config.imageExtent.width;
+        uint32_t const windowHeight = this->vkSwapChain->config.imageExtent.height;
+
+        UniformBufferObject ubo {};
+        ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.projection = glm::perspective(glm::radians(45.0f), (float) windowWidth / (float) windowHeight, 0.1f, 10.0f);
+        ubo.projection[1][1] *= -1;
+
+        memcpy(uniformBuffer->getMappedMemory(), &ubo, sizeof(UniformBufferObject));
     }
 
 
     void run() {
-        INFO(log) << "Main loop starting." << std::endl;
-
         initializeVertexBuffer();
         initializeIndexBuffer();
 
         unsigned contextIndex = 0;
+
+        std::vector<std::shared_ptr<utils::vulkan::Buffer>> uniformBuffers(MAX_FRAMES_IN_FLIGHT);
+        std::vector<std::shared_ptr<utils::vulkan::DeviceMemory>> uniformBufferMemory(MAX_FRAMES_IN_FLIGHT);
+        std::vector<std::shared_ptr<utils::vulkan::DescriptorSet>> descriptorSets(MAX_FRAMES_IN_FLIGHT);
 
         std::vector<std::shared_ptr<utils::vulkan::CommandBuffer>> commandBuffers(MAX_FRAMES_IN_FLIGHT);
         std::vector<std::shared_ptr<utils::vulkan::Semaphore>> imageAvailableSemaphores(MAX_FRAMES_IN_FLIGHT);
@@ -423,19 +482,45 @@ public:
         std::vector<std::shared_ptr<utils::vulkan::Fence>> inFlightFences(MAX_FRAMES_IN_FLIGHT);
 
         for (unsigned i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            uniformBuffers[i] = this->vkDevice->createBuffer(
+                sizeof(UniformBufferObject),
+                VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+                VK_SHARING_MODE_EXCLUSIVE);
+
+            auto const uniformBufferRequirements = uniformBuffers[i]->getMemoryRequirements();
+
+            uint32_t const uniformBufferMemoryType = this->vkPhysicalDevice->selectMemoryType(
+                uniformBufferRequirements.memoryTypeBits,
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+            uniformBufferMemory[i] = this->vkDevice->allocateDeviceMemory(
+                uniformBufferMemoryType, uniformBufferRequirements.size);
+
+            uniformBuffers[i]->bindMemory(uniformBufferMemory[i], 0);
+            uniformBuffers[i]->mapMemory();
+
+            descriptorSets[i] = this->vkDescriptorPool->allocateDescriptorSet(this->vkDescriptorSetLayout);
+            descriptorSets[i]->update(uniformBuffers[i]);
+
             commandBuffers[i] = this->vkCommandPool->allocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
             imageAvailableSemaphores[i] = this->vkDevice->createSemaphore();
             renderCompleteSemaphores[i] = this->vkDevice->createSemaphore();
             inFlightFences[i] = this->vkDevice->createFence(VK_FENCE_CREATE_SIGNALED_BIT);
         }
 
+        INFO(log) << "Main loop starting." << std::endl;
+
         while (!glfwWindow->shouldClose()) {
             glfwPollEvents();
 
+            auto const& uniformBuffer = uniformBuffers[contextIndex];
+            auto const& descriptorSet = descriptorSets[contextIndex];
             auto const& commandBuffer = commandBuffers[contextIndex];
             auto const& imageAvailableSemaphore = imageAvailableSemaphores[contextIndex];
             auto const& renderCompleteSemaphore = renderCompleteSemaphores[contextIndex];
             auto const& inFlightFence = inFlightFences[contextIndex];
+
+            updateUniformBuffer(uniformBuffer);
 
             contextIndex = (contextIndex + 1) % MAX_FRAMES_IN_FLIGHT;
 
@@ -469,6 +554,7 @@ public:
             commandBuffer->setScissor({0, 0}, this->vkSwapChain->config.imageExtent);
             commandBuffer->bindVertexBuffer(this->vkVertexBuffer);
             commandBuffer->bindIndexBuffer(this->vkIndexBuffer, VK_INDEX_TYPE_UINT16);
+            commandBuffer->bindDescriptorSet(descriptorSet, this->vkPipelineLayout, VK_PIPELINE_BIND_POINT_GRAPHICS);
             commandBuffer->drawIndexed(squareIndices.size(), 1, 0, 0, 0);
             commandBuffer->endRenderPass();
             commandBuffer->end();

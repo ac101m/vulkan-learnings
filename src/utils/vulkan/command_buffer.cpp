@@ -121,6 +121,15 @@ namespace utils::vulkan {
     }
 
 
+    void CommandBuffer::bindDescriptorSet(
+        std::shared_ptr<DescriptorSet> const& descriptorSet,
+        std::shared_ptr<PipelineLayout> const& pipelineLayout,
+        VkPipelineBindPoint const bindPoint
+    ) {
+        vkCmdBindDescriptorSets(this->vk, bindPoint, pipelineLayout->getHandle()->vk, 0, 1, &descriptorSet->vk, 0, nullptr);
+    }
+
+
     void CommandBuffer::bindVertexBuffer(std::shared_ptr<Buffer> const& vertexBuffer) {
         VkBuffer vertexBuffers[] = {vertexBuffer->getHandle()->vk};
         VkDeviceSize offsets[] = {0};

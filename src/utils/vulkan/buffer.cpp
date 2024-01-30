@@ -55,6 +55,10 @@ namespace utils::vulkan {
 
 
     void Buffer::mapMemory() {
+        if (this->vkDeviceMemory == nullptr) {
+            throw std::runtime_error("Unable to map memory, buffer is not bound to device memory.");
+        }
+
         if (vkMapMemory(this->vkDeviceHandle->vk, this->vkDeviceMemory->vk, this->memoryOffset, this->memorySize, 0, &this->data) != VK_SUCCESS) {
             throw std::runtime_error("Failed to map vertex buffer memory.");
         }

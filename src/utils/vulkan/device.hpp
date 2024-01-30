@@ -13,6 +13,8 @@
 #include "utils/vulkan/fence.hpp"
 #include "utils/vulkan/buffer.hpp"
 #include "utils/vulkan/device_memory.hpp"
+#include "utils/vulkan/descriptor_set_layout.hpp"
+#include "utils/vulkan/descriptor_pool.hpp"
 
 #include "utils/misc/logging.hpp"
 
@@ -147,6 +149,18 @@ namespace utils::vulkan {
          * @return Shared pointer to new device memory object.
          */
         std::shared_ptr<DeviceMemory> allocateDeviceMemory(uint32_t const memoryType, uint64_t const memoryQuantity) const;
+
+        /**
+         * @brief Create a new descriptor set layout.
+         * @param config Descriptor set layout configuration structure.
+         */
+        std::shared_ptr<DescriptorSetLayout> createDescriptorSetLayout(DescriptorSetLayoutConfig const& config) const;
+
+        /**
+         * @brief Create new descriptor pool.
+         * @param config Descriptor pool configuration structure.
+         */
+        std::shared_ptr<DescriptorPool> createDescriptorPool(DescriptorPoolConfig const& config) const;
 
         /**
          * @brief Wait for device to be idle.
