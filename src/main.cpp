@@ -500,7 +500,7 @@ public:
             uniformBuffers[i]->mapMemory();
 
             descriptorSets[i] = this->vkDescriptorPool->allocateDescriptorSet(this->vkDescriptorSetLayout);
-            descriptorSets[i]->update(uniformBuffers[i]);
+            descriptorSets[i]->update(0, uniformBuffers[i]);
 
             commandBuffers[i] = this->vkCommandPool->allocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
             imageAvailableSemaphores[i] = this->vkDevice->createSemaphore();

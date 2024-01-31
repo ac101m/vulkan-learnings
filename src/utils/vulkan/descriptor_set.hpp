@@ -26,8 +26,10 @@ namespace utils::vulkan {
 
         /**
          * @brief Update a descriptor set with data.
+         * @param binding The index of the binding to update.
+         * @param buffer A buffer to update the specified descriptor with.
          */
-        void update(std::shared_ptr<Buffer> const& buffer);
+        void update(uint32_t const binding, std::shared_ptr<Buffer> const& buffer);
     };
 
 }

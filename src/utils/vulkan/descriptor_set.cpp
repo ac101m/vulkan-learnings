@@ -29,7 +29,7 @@ namespace utils::vulkan {
     }
 
 
-    void DescriptorSet::update(std::shared_ptr<Buffer> const& buffer) {
+    void DescriptorSet::update(uint32_t const binding, std::shared_ptr<Buffer> const& buffer) {
         VkDescriptorBufferInfo bufferInfo {};
         bufferInfo.buffer = buffer->getHandle()->vk;
         bufferInfo.offset = 0;
@@ -38,13 +38,11 @@ namespace utils::vulkan {
         VkWriteDescriptorSet descriptorWrite {};
         descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         descriptorWrite.dstSet = this->vk;
-        descriptorWrite.dstBinding = 0;
+        descriptorWrite.dstBinding = binding;
         descriptorWrite.dstArrayElement = 0;
         descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         descriptorWrite.descriptorCount = 1;
         descriptorWrite.pBufferInfo = &bufferInfo;
-        descriptorWrite.pImageInfo = nullptr;
-        descriptorWrite.pTexelBufferView = nullptr;
 
         vkUpdateDescriptorSets(this->vkDeviceHandle->vk, 1, &descriptorWrite, 0, nullptr);
     }
