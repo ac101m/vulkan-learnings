@@ -4,33 +4,42 @@
 #include "utils/misc/logging.hpp"
 #include "utils/vulkan/descriptor_set.hpp"
 #include "utils/vulkan/descriptor_set_layout.hpp"
+#include "utils/vulkan/device.hpp"
 
 #include <memory>
+#include <vector>
 
 
 namespace utils::vulkan {
 
     /**
-     * @brief Configuration struct for creating descriptor pools.
+     * @brief Builder for creating descriptor pools.
      */
-    struct DescriptorPoolConfig {
-        uint32_t const maxSets;
+    class DescriptorPoolBuilder {
+    private:
+        uint32_t const m_maxSets;
         std::vector<VkDescriptorPoolSize> poolSizes;
+
+    public:
+        DescriptorPoolBuilder(
+            std::shared_ptr<Device> const& device,
+            uint32_t const maxSets
+        ) : m_maxSets(maxSets) {}
 
         /**
          * @brief Add a pool to the configuration.
          * @param poolType Type for this descriptor pool.
          * @param poolSize Size of this descriptor pool.
          */
-        void addPool(VkDescriptorType poolType, uint32_t const poolSize) {
+        DescriptorPoolBuilder& addPool(VkDescriptorType poolType, uint32_t const poolSize) {
             VkDescriptorPoolSize poolSizeInfo {};
             poolSizeInfo.type = poolType;
             poolSizeInfo.descriptorCount = poolSize;
-            poolSizes.push_back(poolSizeInfo);
-        }
 
-        DescriptorPoolConfig(uint32_t const maxSets)
-            : maxSets(maxSets) {}
+            poolSizes.push_back(poolSizeInfo);
+
+            return *this;
+        }
     };
 
 
@@ -41,9 +50,7 @@ namespace utils::vulkan {
         std::shared_ptr<DeviceHandle> const vkDeviceHandle;
 
     public:
-        DescriptorPool(
-            std::shared_ptr<DeviceHandle> const& vkDeviceHandle,
-            DescriptorPoolConfig const& config);
+        DescriptorPool(DescriptorPoolBuilder const& DescriptorPoolBuilder);
 
         /**
          * @brief Allocate a descriptor set.

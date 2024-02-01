@@ -169,11 +169,6 @@ namespace utils::vulkan {
     }
 
 
-    std::shared_ptr<DescriptorSetLayout> Device::createDescriptorSetLayout(DescriptorSetLayoutConfig const& config) const {
-        return std::make_shared<DescriptorSetLayout>(this->vkHandle, config);
-    }
-
-
     std::shared_ptr<DescriptorPool> Device::createDescriptorPool(DescriptorPoolConfig const& config) const {
         return std::make_shared<DescriptorPool>(this->vkHandle, config);
     }

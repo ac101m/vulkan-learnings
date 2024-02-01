@@ -9,6 +9,24 @@
 namespace utils::vulkan {
 
     /**
+     * @brief Base class for objects which manage the lifetime of vulkan
+     * handles.
+     */
+    template<typename T>
+    class Handle {
+    protected:
+        T * m_vk;
+
+    public:
+        Handle(T * const vk) : m_vk(vk) {}
+
+        T * vk() {
+            return m_vk;
+        }
+    };
+
+
+    /**
      * @brief Helper for vulkan utility classes which wrap a handle.
      * Used to reduce boilerplate a little.
      */
