@@ -21,16 +21,18 @@ namespace utils::vulkan {
          * @param bindingIndex Index of the binding within the shader.
          * @param descriptorType Type of this descriptor binding.
          * @param stageFlags Stages of the shader pipeline to which the binding is required.
+         * @param descriptorCount Number of descriptors to add to the layout.
          */
         void addDescriptor(
             uint32_t const bindingIndex,
             VkDescriptorType const descriptorType,
-            VkShaderStageFlags const stageFlags
+            VkShaderStageFlags const stageFlags,
+            uint32_t const descriptorCount = 1
         ) {
             VkDescriptorSetLayoutBinding descriptorBinding {};
             descriptorBinding.binding = bindingIndex;
             descriptorBinding.descriptorType = descriptorType;
-            descriptorBinding.descriptorCount = 1;
+            descriptorBinding.descriptorCount = descriptorCount;
             descriptorBinding.stageFlags = stageFlags;
             descriptorBinding.pImmutableSamplers = nullptr;
 
