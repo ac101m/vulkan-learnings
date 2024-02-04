@@ -163,6 +163,12 @@ namespace utils::vulkan {
         std::shared_ptr<DescriptorPool> createDescriptorPool(DescriptorPoolConfig const& config) const;
 
         /**
+         * @brief Create the thing.
+         * @param config Image configuration.
+         */
+        std::shared_ptr<Image> createImage(ImageConfig const& config) const;
+
+        /**
          * @brief Wait for device to be idle.
          */
         void waitIdle() const;

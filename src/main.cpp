@@ -6,13 +6,16 @@
 #include "utils/vulkan/render_pass.hpp"
 #include "utils/misc/logging.hpp"
 #include "utils/misc/file.hpp"
+#include "utils/misc/image.hpp"
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#define STB_IMAGE_IMPLEMENTATION
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/vec4.hpp>
 #include <glm/mat4x4.hpp>
+#include <stb/stb_image.h>
 
 #include <iostream>
 #include <vector>
@@ -78,6 +81,7 @@ private:
 
     std::shared_ptr<utils::vulkan::Buffer> vkVertexBuffer;
     std::shared_ptr<utils::vulkan::Buffer> vkIndexBuffer;
+    std::shared_ptr<utils::vulkan::Image> vkTextureImage;
 
     std::vector<std::string> const debugValidationLayers = {
         "VK_LAYER_KHRONOS_validation"
@@ -405,6 +409,69 @@ private:
     }
 
 
+    void loadImage(std::filesystem::path const& path) {
+        utils::Image image(path, STBI_rgb_alpha);
+
+        // Set up staging buffer
+        auto stagingBuffer = this->vkDevice->createBuffer(
+            image.dataSize(),
+            VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_SHARING_MODE_EXCLUSIVE);
+
+        auto const stagingBufferRequirements = stagingBuffer->getMemoryRequirements();
+
+        uint32_t const stagingBufferMemoryType = this->vkPhysicalDevice->selectMemoryType(
+            stagingBufferRequirements.memoryTypeBits,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+        std::shared_ptr<utils::vulkan::DeviceMemory> stagingBufferMemory = this->vkDevice->allocateDeviceMemory(
+            stagingBufferMemoryType, stagingBufferRequirements.size);
+
+        stagingBuffer->bindMemory(stagingBufferMemory, 0);
+
+        // Copy data to staging buffer
+        stagingBuffer->mapMemory();
+        memcpy(stagingBuffer->getMappedMemory(), image.data(), image.dataSize());
+        stagingBuffer->unmapMemory();
+
+        auto const imageConfig = utils::vulkan::ImageConfig(VK_IMAGE_TYPE_2D, image.width(), image.height())
+            .setFormat(VK_FORMAT_R8G8B8A8_SRGB)
+            .setUsageFlag(VK_IMAGE_USAGE_TRANSFER_DST_BIT)
+            .setUsageFlag(VK_IMAGE_USAGE_SAMPLED_BIT);
+
+        this->vkTextureImage = this->vkDevice->createImage(imageConfig);
+
+        auto const imageMemoryRequirements = this->vkTextureImage->getMemoryRequirements();
+
+        uint32_t const deviceBufferMemoryType = this->vkPhysicalDevice->selectMemoryType(
+            imageMemoryRequirements.memoryTypeBits,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+        std::shared_ptr<utils::vulkan::DeviceMemory> deviceImageMemory = this->vkDevice->allocateDeviceMemory(
+            deviceBufferMemoryType, imageMemoryRequirements.size);
+
+        this->vkTextureImage->bindMemory(deviceImageMemory);
+
+        // Copy the staging buffer contents to the GPU
+        std::shared_ptr<utils::vulkan::CommandBuffer> initCommandBuffer =
+            this->vkCommandPool->allocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+        initCommandBuffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+        // TODO set up image format
+
+        initCommandBuffer->end();
+
+        std::shared_ptr<utils::vulkan::Fence> uploadCompleteFence = this->vkDevice->createFence();
+
+        this->vkGraphicsQueue->submit(
+            {}, {}, {}, {initCommandBuffer},
+            uploadCompleteFence);
+
+        uploadCompleteFence->wait();
+    }
+
+
 public:
     Application(uint32_t const windowWidth, uint32_t const windowHeight, bool doDebug) {
         auto const validationLayers = doDebug ? debugValidationLayers : std::vector<std::string>(0);
@@ -444,6 +511,8 @@ public:
 
         this->vkCommandPool = this->vkDevice->createCommandPool(createCommandPoolConfig());
         this->vkDescriptorPool = this->vkDevice->createDescriptorPool(createDescriptorPoolConfig());
+
+        loadImage("data/textures/test/statue.jpg");
     }
 
 

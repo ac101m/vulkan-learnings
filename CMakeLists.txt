@@ -42,7 +42,8 @@ set(UTILS_VULKAN_SOURCE_SET
 set(UTILS_MISC_SOURCE_SET
     src/utils/misc/logging.cpp
     src/utils/misc/string.cpp
-    src/utils/misc/file.cpp)
+    src/utils/misc/file.cpp
+    src/utils/misc/image.cpp)
 
 set(UTILS_GLFW_SOURCE_SET
     src/utils/glfw/window.cpp)

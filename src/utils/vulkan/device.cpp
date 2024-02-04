@@ -179,6 +179,11 @@ namespace utils::vulkan {
     }
 
 
+    std::shared_ptr<Image> Device::createImage(ImageConfig const& config) const {
+        return std::make_shared<Image>(this->vkHandle, config);
+    }
+
+
     void Device::waitIdle() const {
         if (vkDeviceWaitIdle(this->vkHandle->vk) != VK_SUCCESS) {
             throw std::runtime_error("Error waiting for device idle.");
