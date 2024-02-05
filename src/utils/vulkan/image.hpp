@@ -25,7 +25,7 @@ namespace utils::vulkan {
 
         // Parameters with defaults
         uint32_t mipLevelCount = 1;
-        uint32_t arrayLayers = 1;
+        uint32_t layerCount = 1;
         VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
         VkImageTiling tiling = VK_IMAGE_TILING_OPTIMAL;
         VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -111,7 +111,7 @@ namespace utils::vulkan {
         void bindMemory(std::shared_ptr<DeviceMemory> const& deviceMemory, uint64_t const offset = 0);
 
 
-        public class MemoryBarrierBuilder {
+        class MemoryBarrierBuilder {
         private:
             std::shared_ptr<Image> const image;
 

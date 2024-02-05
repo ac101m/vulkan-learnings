@@ -32,7 +32,7 @@ namespace utils::vulkan {
         imageInfo.extent.height = config.height;
         imageInfo.extent.depth = config.depth;
         imageInfo.mipLevels = config.mipLevelCount;
-        imageInfo.arrayLayers = config.arrayLayers;
+        imageInfo.arrayLayers = config.layerCount;
         imageInfo.format = config.format;
         imageInfo.tiling = config.tiling;
         imageInfo.initialLayout = config.initialLayout;
