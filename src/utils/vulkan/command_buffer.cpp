@@ -168,4 +168,17 @@ namespace utils::vulkan {
 
         this->copyBuffer(sourceBuffer, destinationBuffer, 0, 0, sourceBuffer->getMemorySize());
     }
+
+
+    void CommandBuffer::pipelineBarrier(VkImageMemoryBarrier const& barrier) {
+        vkCmdPipelineBarrier(
+            this->vk,
+            0, // TODO
+            0, // TODO
+            0,
+            0, nullptr,
+            0, nullptr,
+            1, &barrier
+        );
+    }
 }

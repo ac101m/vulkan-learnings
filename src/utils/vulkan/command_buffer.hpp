@@ -8,6 +8,7 @@
 #include "utils/vulkan/buffer.hpp"
 #include "utils/vulkan/descriptor_set.hpp"
 #include "utils/vulkan/pipeline_layout.hpp"
+#include "utils/vulkan/image.hpp"
 
 
 namespace utils::vulkan {
@@ -156,6 +157,12 @@ namespace utils::vulkan {
         void copyBuffer(
             std::shared_ptr<Buffer> const& sourceBuffer,
             std::shared_ptr<Buffer> const& destinationBuffer);
+
+        /**
+         * @brief Perform an image memory barrier.
+         * @param barrier VkImageMemoryBarrier instance.
+         */
+        void pipelineBarrier(VkImageMemoryBarrier const& barrier);
     };
 
 }

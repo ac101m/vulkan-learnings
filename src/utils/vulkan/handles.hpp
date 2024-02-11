@@ -117,8 +117,8 @@ namespace utils::vulkan {
      */
     class ImageHandle {
     private:
-        std::shared_ptr<DeviceHandle> const& deviceHandle;
-        std::shared_ptr<SwapChainHandle> const& owningSwapChain;
+        std::shared_ptr<DeviceHandle> const deviceHandle;
+        std::shared_ptr<SwapChainHandle> const owningSwapChain;
 
     public:
         VkImage_T * vk;

@@ -19,9 +19,7 @@ namespace utils::vulkan {
     ) :
         HandleWrapper<ImageHandle>(std::make_shared<ImageHandle>(vkDeviceHandle)),
         vkDeviceHandle(vkDeviceHandle),
-        layout(config.initialLayout),
-        mipLevelCount(config.mipLevelCount),
-        layerCount(config.layerCount)
+        mutableSettings(config.getMutableSettings())
     {
         INFO(log) << "Creating image." << std::endl;
 
@@ -60,6 +58,30 @@ namespace utils::vulkan {
 
     std::shared_ptr<ImageView> Image::createImageView(ImageViewConfig const& config) {
         return std::make_shared<ImageView>(this->vkDeviceHandle, this->vkHandle, config);
+    }
+
+
+    VkImageMemoryBarrier Image::updateSettings(MutableImageSettings const& newSettings) {
+        auto const& oldSettings = this->mutableSettings;
+
+        VkImageMemoryBarrier barrier {};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.image = this->vkHandle->vk;
+        barrier.oldLayout = oldSettings.layout;
+        barrier.newLayout = newSettings.layout;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = newSettings.mipLevelCount;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = newSettings.layerCount;
+        barrier.srcAccessMask = 0;  // TODO
+        barrier.dstAccessMask = 0;  // TODO
+
+        this->mutableSettings = newSettings;
+
+        return barrier;
     }
 
 }

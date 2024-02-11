@@ -456,10 +456,11 @@ private:
         std::shared_ptr<utils::vulkan::CommandBuffer> initCommandBuffer =
             this->vkCommandPool->allocateCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
+        utils::vulkan::MutableImageSettings settings = this->vkTextureImage->getMutableSettings();
+        settings.layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
         initCommandBuffer->begin(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
-
-        // TODO set up image format
-
+        initCommandBuffer->pipelineBarrier(this->vkTextureImage->updateSettings(settings));
         initCommandBuffer->end();
 
         std::shared_ptr<utils::vulkan::Fence> uploadCompleteFence = this->vkDevice->createFence();
