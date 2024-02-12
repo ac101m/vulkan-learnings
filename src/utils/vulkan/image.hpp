@@ -13,6 +13,16 @@
 namespace utils::vulkan {
 
     /**
+     * @brief Contains mutable image settings.
+     */
+    struct MutableImageSettings {
+        VkImageLayout layout;
+        uint32_t mipLevelCount;
+        uint32_t layerCount;
+    };
+
+
+    /**
      * @brief Helper object for configuring image objects.
      */
     struct ImageConfig {
@@ -73,6 +83,18 @@ namespace utils::vulkan {
             usage &= ~flag;
             return *this;
         }
+
+        /**
+         * @brief Get mutable image settings settings.
+         * @return Mutable image settings structure.
+         */
+        MutableImageSettings getMutableSettings() const {
+            MutableImageSettings settings {};
+            settings.layout = this->initialLayout;
+            settings.mipLevelCount = this->mipLevelCount;
+            settings.layerCount = this->layerCount;
+            return settings;
+        }
     };
 
 
@@ -82,9 +104,7 @@ namespace utils::vulkan {
 
         std::shared_ptr<DeviceHandle> const vkDeviceHandle;
 
-        VkImageLayout layout;
-        uint32_t mipLevelCount;
-        uint32_t layerCount;
+        MutableImageSettings mutableSettings;
 
     public:
         Image(std::shared_ptr<ImageHandle> const& vkImageHandle, std::shared_ptr<DeviceHandle> const& vkDeviceHandle);
@@ -110,39 +130,19 @@ namespace utils::vulkan {
          */
         void bindMemory(std::shared_ptr<DeviceMemory> const& deviceMemory, uint64_t const offset = 0);
 
+        /**
+         * @brief Get mutable image settings.
+         * @return Mutable image settings structure.
+         */
+        MutableImageSettings getMutableSettings() const { return this->mutableSettings; }
 
-        class MemoryBarrierBuilder {
-        private:
-            std::shared_ptr<Image> const image;
+        /**
+         * @brief Update image metadata based on barrier details.
+         * @param newSettings New mutable image settings.
+         * @return Image memory barrier required to update mutable image settings.
+         */
+        VkImageMemoryBarrier updateSettings(MutableImageSettings const& newSettings);
 
-            VkImageMemoryBarrier barrier {};
-
-        public:
-            MemoryBarrierBuilder(std::shared_ptr<Image> const& image) : image(image) {
-                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-                barrier.oldLayout = image->layout;
-                barrier.newLayout = image->layout;
-                barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-                barrier.image = image->vkHandle->vk;
-                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-                barrier.subresourceRange.baseMipLevel = 0;
-                barrier.subresourceRange.levelCount = image->mipLevelCount;
-                barrier.subresourceRange.baseArrayLayer = 0;
-                barrier.subresourceRange.layerCount = image->layerCount;
-                barrier.srcAccessMask = 0;  // TODO
-                barrier.dstAccessMask = 0;  // TODO
-            }
-
-            MemoryBarrierBuilder& setNewLayout(VkImageLayout const newLayout) {
-                this->barrier.newLayout = newLayout;
-                return *this;
-            }
-
-            VkImageMemoryBarrier build() {
-                return barrier;
-            }
-        };
     };
 
 }
